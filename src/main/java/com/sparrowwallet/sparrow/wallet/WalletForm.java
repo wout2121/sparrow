@@ -171,7 +171,7 @@ public class WalletForm {
                                     "It appears that the history of this wallet has changed, which may be caused by an incorrect passphrase. " +
                                     "Note that any typos when entering the passphrase will create an entirely different wallet, with a correspondingly different history.\n\n" +
                                     "You can proceed with a full refresh of this wallet, or you can reopen it to enter the passphrase again.",
-                                    new ButtonType("Refresh Wallet", ButtonBar.ButtonData.CANCEL_CLOSE),
+                                    new ButtonType("herstart Portefeuille", ButtonBar.ButtonData.CANCEL_CLOSE),
                                     new ButtonType("Reopen Wallet", ButtonBar.ButtonData.OK_DONE));
 
                             if(optType.isPresent() && optType.get().getButtonData() == ButtonBar.ButtonData.OK_DONE) {

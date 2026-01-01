@@ -57,7 +57,7 @@ public abstract class DeviceDialog<R> extends Dialog<R> {
         scanBox.setAlignment(Pos.CENTER);
         Glyph usb = new Glyph(FontAwesome5Brands.FONT_NAME, FontAwesome5Brands.Glyph.USB);
         usb.setFontSize(50);
-        scanLabel = new Label("Connect Hardware Wallet");
+        scanLabel = new Label("Verbind Hardware Wallet");
         scanButton = new Button("Scan...");
         scanButton.setPrefSize(120, 60);
         scanButton.setOnAction(event -> {
@@ -77,8 +77,8 @@ public abstract class DeviceDialog<R> extends Dialog<R> {
             scanBox.setVisible(false);
         }
 
-        final ButtonType rescanButtonType = new javafx.scene.control.ButtonType("Rescan", ButtonBar.ButtonData.NO);
-        final ButtonType cancelButtonType = new javafx.scene.control.ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        final ButtonType rescanButtonType = new javafx.scene.control.ButtonType("Herscannen", ButtonBar.ButtonData.NO);
+        final ButtonType cancelButtonType = new javafx.scene.control.ButtonType("Annuleren", ButtonBar.ButtonData.CANCEL_CLOSE);
         dialogPane.getButtonTypes().addAll(rescanButtonType, cancelButtonType);
 
         Button rescanButton = (Button) dialogPane.lookupButton(rescanButtonType);
@@ -117,7 +117,7 @@ public abstract class DeviceDialog<R> extends Dialog<R> {
             scanLabel.setText(workerStateEvent.getSource().getException().getMessage());
         });
         enumerateService.setOnRunning(workerStateEvent -> {
-            scanButton.setText("Scanning...");
+            scanButton.setText("Scannen...");
         });
         enumerateService.start();
     }
@@ -137,7 +137,7 @@ public abstract class DeviceDialog<R> extends Dialog<R> {
         if(dialogDevices.isEmpty()) {
             scanButton.setDefaultButton(true);
             scanBox.setVisible(true);
-            scanLabel.setText("No matching devices found");
+            scanLabel.setText(">Geen bijpassend apparaat gevonden");
         } else {
             scanBox.setVisible(false);
             for(Device device : dialogDevices) {

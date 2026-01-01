@@ -129,19 +129,19 @@ public class ReceiveController extends WalletFormController implements Initializ
     private void updateLastUsed() {
         Set<BlockTransactionHashIndex> currentOutputs = currentEntry.getNode().getTransactionOutputs();
         if(AppServices.isConnected() && currentOutputs.isEmpty()) {
-            lastUsed.setText("Never");
+            lastUsed.setText("Nooit");
             lastUsed.setGraphic(getUnusedGlyph());
             address.getStyleClass().remove("error");
         } else if(!currentOutputs.isEmpty()) {
             long count = currentOutputs.size();
             BlockTransactionHashIndex lastUsedReference = currentOutputs.stream().skip(count - 1).findFirst().get();
-            lastUsed.setText(lastUsedReference.getHeight() <= 0 ? "Unconfirmed Transaction" : (lastUsedReference.getDate() == null ? "Unknown" : DATE_FORMAT.format(lastUsedReference.getDate())));
+            lastUsed.setText(lastUsedReference.getHeight() <= 0 ? "Niet bevestigde Transactie" : (lastUsedReference.getDate() == null ? "Unknown" : DATE_FORMAT.format(lastUsedReference.getDate())));
             lastUsed.setGraphic(getWarningGlyph());
             if(!address.getStyleClass().contains("error")) {
                 address.getStyleClass().add("error");
             }
         } else {
-            lastUsed.setText("Unknown");
+            lastUsed.setText("Niet geweten");
             lastUsed.setGraphic(getUnknownGlyph());
             address.getStyleClass().remove("error");
         }

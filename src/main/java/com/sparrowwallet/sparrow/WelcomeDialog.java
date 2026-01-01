@@ -27,10 +27,10 @@ public class WelcomeDialog extends Dialog<Mode> {
 
             dialogPane.getStylesheets().add(AppServices.class.getResource("welcome.css").toExternalForm());
 
-            final ButtonType nextButtonType = new javafx.scene.control.ButtonType("Next", ButtonBar.ButtonData.OK_DONE);
-            final ButtonType backButtonType = new javafx.scene.control.ButtonType("Back", ButtonBar.ButtonData.LEFT);
-            final ButtonType onlineButtonType = new javafx.scene.control.ButtonType("Configure Server", ButtonBar.ButtonData.APPLY);
-            final ButtonType offlineButtonType = new javafx.scene.control.ButtonType(AppServices.isConnected() ? "Done" : "Later or Offline Mode", ButtonBar.ButtonData.CANCEL_CLOSE);
+            final ButtonType nextButtonType = new javafx.scene.control.ButtonType("Volgende", ButtonBar.ButtonData.OK_DONE);
+            final ButtonType backButtonType = new javafx.scene.control.ButtonType("Terug", ButtonBar.ButtonData.LEFT);
+            final ButtonType onlineButtonType = new javafx.scene.control.ButtonType("Stel Server in", ButtonBar.ButtonData.APPLY);
+            final ButtonType offlineButtonType = new javafx.scene.control.ButtonType(AppServices.isConnected() ? "Klaar" : "Later of Offline Mode", ButtonBar.ButtonData.CANCEL_CLOSE);
             dialogPane.getButtonTypes().addAll(nextButtonType, backButtonType, onlineButtonType, offlineButtonType);
 
             Button nextButton = (Button)dialogPane.lookupButton(nextButtonType);

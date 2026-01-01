@@ -16,7 +16,7 @@ public class UtxosTreeTable extends CoinTreeTable {
         updateAll(rootEntry);
         setShowRoot(false);
 
-        TreeTableColumn<Entry, Entry> dateCol = new TreeTableColumn<>("Date");
+        TreeTableColumn<Entry, Entry> dateCol = new TreeTableColumn<>("Datum");
         dateCol.setCellValueFactory((TreeTableColumn.CellDataFeatures<Entry, Entry> param) -> {
             return new ReadOnlyObjectWrapper<>(param.getValue().getValue());
         });
@@ -53,7 +53,7 @@ public class UtxosTreeTable extends CoinTreeTable {
             mixStatusCol.setComparator(Comparator.comparingInt(UtxoEntry.MixStatus::getMixesDone));
             getColumns().add(mixStatusCol);
         } else {
-            TreeTableColumn<Entry, UtxoEntry.AddressStatus> addressCol = new TreeTableColumn<>("Address");
+            TreeTableColumn<Entry, UtxoEntry.AddressStatus> addressCol = new TreeTableColumn<>("Adres");
             addressCol.setCellValueFactory((TreeTableColumn.CellDataFeatures<Entry, UtxoEntry.AddressStatus> param) -> {
                 return ((UtxoEntry)param.getValue().getValue()).addressStatusProperty();
             });
@@ -63,7 +63,7 @@ public class UtxosTreeTable extends CoinTreeTable {
             getColumns().add(addressCol);
         }
 
-        TreeTableColumn<Entry, String> labelCol = new TreeTableColumn<>("Label");
+        TreeTableColumn<Entry, String> labelCol = new TreeTableColumn<>("Mededeling");
         labelCol.setCellValueFactory((TreeTableColumn.CellDataFeatures<Entry, String> param) -> {
             return param.getValue().getValue().labelProperty();
         });
@@ -71,7 +71,7 @@ public class UtxosTreeTable extends CoinTreeTable {
         labelCol.setSortable(true);
         getColumns().add(labelCol);
 
-        TreeTableColumn<Entry, Number> amountCol = new TreeTableColumn<>("Value");
+        TreeTableColumn<Entry, Number> amountCol = new TreeTableColumn<>("Waarde");
         amountCol.setCellValueFactory((TreeTableColumn.CellDataFeatures<Entry, Number> param) -> {
             return new ReadOnlyObjectWrapper<>(param.getValue().getValue().getValue());
         });

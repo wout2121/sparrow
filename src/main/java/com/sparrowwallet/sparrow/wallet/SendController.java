@@ -199,7 +199,7 @@ public class SendController extends WalletFormController implements Initializabl
                 setFeeRate(targetBlocksFeeRates.get(target));
                 blockTargetFeeRatesChart.select(target);
             } else {
-                feeRate.setText("Unknown");
+                feeRate.setText("Niet geweten");
             }
 
             Tooltip tooltip = new Tooltip("Target inclusion within " + target + " blocks");
@@ -927,7 +927,7 @@ public class SendController extends WalletFormController implements Initializabl
         if(targetBlocksFeeRates.get(Integer.MAX_VALUE) != null) {
             Double minFeeRate = targetBlocksFeeRates.get(Integer.MAX_VALUE);
             if(minFeeRate > 1.0 && feeRateAmt < minFeeRate) {
-                feeRatePriority.setText("Below Minimum");
+                feeRatePriority.setText("Onder het minimum");
                 feeRatePriority.setTooltip(new Tooltip("Transactions at this fee rate are currently being purged from the default sized mempool"));
                 feeRatePriorityGlyph.setStyle("-fx-text-fill: #a0a1a7cc");
                 feeRatePriorityGlyph.setIcon(FontAwesome5.Glyph.EXCLAMATION_CIRCLE);
@@ -950,23 +950,23 @@ public class SendController extends WalletFormController implements Initializabl
                 Double maxFeeRate = AppServices.getFeeRatesRange().getLast();
                 Double highestBlocksRate = targetBlocksFeeRates.get(TARGET_BLOCKS_RANGE.get(0));
                 if(highestBlocksRate < maxFeeRate && feeRateAmt > (highestBlocksRate + ((maxFeeRate - highestBlocksRate) / 10))) {
-                    feeRatePriority.setText("Overpaid");
+                    feeRatePriority.setText("Je betaald te veel");
                     feeRatePriority.setTooltip(new Tooltip("Transaction fees at this rate are likely higher than necessary"));
                     feeRatePriorityGlyph.setStyle("-fx-text-fill: #c8416499");
                     feeRatePriorityGlyph.setIcon(FontAwesome5.Glyph.EXCLAMATION_CIRCLE);
                 } else {
-                    feeRatePriority.setText("High Priority");
+                    feeRatePriority.setText("Hoge Prioriteit");
                     feeRatePriority.setTooltip(new Tooltip("Typically confirms within minutes"));
                     feeRatePriorityGlyph.setStyle("-fx-text-fill: #c8416499");
                     feeRatePriorityGlyph.setIcon(FontAwesome5.Glyph.CIRCLE);
                 }
             } else if(targetBlocks < FeeRatesSource.BLOCKS_IN_HOUR) {
-                feeRatePriority.setText("Medium Priority");
+                feeRatePriority.setText("Gemiddelde Prioriteit");
                 feeRatePriority.setTooltip(new Tooltip("Typically confirms within an hour or two"));
                 feeRatePriorityGlyph.setStyle("-fx-text-fill: #fba71b99");
                 feeRatePriorityGlyph.setIcon(FontAwesome5.Glyph.CIRCLE);
             } else {
-                feeRatePriority.setText("Low Priority");
+                feeRatePriority.setText("Lage Prioriteit");
                 feeRatePriority.setTooltip(new Tooltip("Typically confirms in a day or longer"));
                 feeRatePriorityGlyph.setStyle("-fx-text-fill: #41a9c999");
                 feeRatePriorityGlyph.setIcon(FontAwesome5.Glyph.CIRCLE);
@@ -1206,7 +1206,7 @@ public class SendController extends WalletFormController implements Initializabl
                 });
                 decryptWalletService.setOnFailed(workerStateEvent -> {
                     EventManager.get().post(new StorageEvent(storage.getWalletId(wallet), TimedEvent.Action.END, "Failed"));
-                    AppServices.showErrorDialog("Incorrect Password", decryptWalletService.getException().getMessage());
+                    AppServices.showErrorDialog("Niet correct wachtwoord", decryptWalletService.getException().getMessage());
                 });
                 EventManager.get().post(new StorageEvent(storage.getWalletId(wallet), TimedEvent.Action.START, "Decrypting wallet..."));
                 decryptWalletService.start();
@@ -1328,7 +1328,7 @@ public class SendController extends WalletFormController implements Initializabl
         successGlyph.getStyleClass().add("success");
         successGlyph.setFontSize(50);
 
-        AppServices.showAlertDialog("Notification Successful", "The notification transaction was successfully sent for payment code " +
+        AppServices.showAlertDialog("Mededeling succesvol", "The notification transaction was successfully sent for payment code " +
                 externalPaymentCode.toAbbreviatedString() + (payNym == null ? "" : " (" + payNym.nymName() + ")") +
                 ".\n\nYou can send to it by entering the payment code, or selecting `PayNym or Payment code` in the Pay to dropdown.", Alert.AlertType.INFORMATION, successGlyph, ButtonType.OK);
     }

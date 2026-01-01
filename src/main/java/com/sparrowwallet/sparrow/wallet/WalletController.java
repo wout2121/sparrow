@@ -165,7 +165,7 @@ public class WalletController extends WalletFormController implements Initializa
         Glyph lock = new Glyph("FontAwesome", FontAwesome.Glyph.LOCK);
         lock.setFontSize(80);
         vBox.getChildren().add(lock);
-        Label label = new Label("Enter password to unlock:");
+        Label label = new Label("Vul wachtwoord in om te ontgrendelen:");
         label.managedProperty().bind(label.visibleProperty());
         label.visibleProperty().bind(walletEncryptedProperty);
         passwordField = new ViewPasswordField();
@@ -175,7 +175,7 @@ public class WalletController extends WalletFormController implements Initializa
         passwordField.setOnAction(event -> {
             unlockWallet(passwordField);
         });
-        Button unlockButton = new Button("Unlock");
+        Button unlockButton = new Button("Ontgrendel");
         unlockButton.setPrefWidth(300);
         unlockButton.setOnAction(event -> {
             unlockWallet(passwordField);
@@ -197,7 +197,7 @@ public class WalletController extends WalletFormController implements Initializa
             keyDerivationService.setOnSucceeded(workerStateEvent -> {
                 passwordField.clear();
                 password.clear();
-                EventManager.get().post(new StorageEvent(walletId, TimedEvent.Action.END, "Done"));
+                EventManager.get().post(new StorageEvent(walletId, TimedEvent.Action.END, "Klaar"));
                 unlockWallet();
             });
             keyDerivationService.setOnFailed(workerStateEvent -> {

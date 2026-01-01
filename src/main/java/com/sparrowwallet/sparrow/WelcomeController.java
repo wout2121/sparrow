@@ -52,11 +52,11 @@ public class WelcomeController {
         welcomeBox.getStyleClass().add("offline");
         serverStatus.setText("Offline");
         serverToggle.addEventFilter(MouseEvent.MOUSE_RELEASED, Event::consume);
-        Tooltip tooltip = new Tooltip("Demonstration only - you are not connected!");
+        Tooltip tooltip = new Tooltip("Enkel demostratie - je bent niet verbonden!");
         tooltip.setShowDelay(Duration.ZERO);
         serverToggle.setTooltip(tooltip);
         serverToggle.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            serverStatus.setText(newValue ? "Connected (demonstration only)" : "Offline");
+            serverStatus.setText(newValue ? "Verbonden (enkel voor demostratie)" : "Offline");
         });
     }
 
@@ -69,7 +69,7 @@ public class WelcomeController {
             PauseTransition wait = new PauseTransition(Duration.millis(200));
             wait.setOnFinished((e) -> {
                 serverToggle.setSelected(true);
-                serverStatus.setText("Connected to a Public Server (demonstration only)");
+                serverStatus.setText("Verbonden met publieke Server (enkel voor demostratie)");
             });
             wait.play();
             return true;
@@ -81,7 +81,7 @@ public class WelcomeController {
             welcomeBox.getStyleClass().clear();
             welcomeBox.getStyleClass().add("bitcoin-core");
             serverToggle.setSelected(true);
-            serverStatus.setText("Connected to Bitcoin Core (demonstration only)");
+            serverStatus.setText("Verbonden met Bitcoin Core (enkel voor demostratie)");
             return true;
         }
 
@@ -91,7 +91,7 @@ public class WelcomeController {
             welcomeBox.getStyleClass().clear();
             welcomeBox.getStyleClass().add("private-electrum");
             serverToggle.setSelected(true);
-            serverStatus.setText("Connected to a Private Electrum Server (demonstration only)");
+            serverStatus.setText("Verbonden met een Privaat Electrum Server (enkel voor demostratie)");
         }
 
         return false;
@@ -118,7 +118,7 @@ public class WelcomeController {
             welcomeBox.getStyleClass().clear();
             welcomeBox.getStyleClass().add("public-electrum");
             serverToggle.setSelected(true);
-            serverStatus.setText("Connected to a Public Server (demonstration only)");
+            serverStatus.setText("Verbonden met een publieke Server (enkel voor demostratie)");
             return true;
         }
 
@@ -128,7 +128,7 @@ public class WelcomeController {
             welcomeBox.getStyleClass().clear();
             welcomeBox.getStyleClass().add("bitcoin-core");
             serverToggle.setSelected(true);
-            serverStatus.setText("Connected to Bitcoin Core (demonstration only)");
+            serverStatus.setText("Verbonden met Bitcoin Core (enkel voor demostratie)");
             return true;
         }
 

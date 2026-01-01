@@ -26,7 +26,7 @@ public class AddressTreeTable extends CoinTreeTable {
         updateAll(rootEntry);
         setShowRoot(false);
 
-        TreeTableColumn<Entry, Entry> addressCol = new TreeTableColumn<>("Address / Outpoints");
+        TreeTableColumn<Entry, Entry> addressCol = new TreeTableColumn<>("Adres / Outpoints");
         addressCol.setCellValueFactory((TreeTableColumn.CellDataFeatures<Entry, Entry> param) -> {
             return new ReadOnlyObjectWrapper<>(param.getValue().getValue());
         });
@@ -38,7 +38,7 @@ public class AddressTreeTable extends CoinTreeTable {
             addressCol.setMinWidth(TextUtils.computeTextWidth(AppServices.getMonospaceFont(), address, 0.0));
         }
 
-        TreeTableColumn<Entry, String> labelCol = new TreeTableColumn<>("Label");
+        TreeTableColumn<Entry, String> labelCol = new TreeTableColumn<>("Mededeling");
         labelCol.setCellValueFactory((TreeTableColumn.CellDataFeatures<Entry, String> param) -> {
             return param.getValue().getValue().labelProperty();
         });
@@ -46,7 +46,7 @@ public class AddressTreeTable extends CoinTreeTable {
         labelCol.setSortable(false);
         getColumns().add(labelCol);
 
-        TreeTableColumn<Entry, Number> countCol = new TreeTableColumn<>("Transactions");
+        TreeTableColumn<Entry, Number> countCol = new TreeTableColumn<>("Transacties");
         countCol.setCellValueFactory((TreeTableColumn.CellDataFeatures<Entry, Number> param) -> {
             return new ReadOnlyObjectWrapper<>(param.getValue().getValue().getChildren().size());
         });
@@ -55,7 +55,7 @@ public class AddressTreeTable extends CoinTreeTable {
         countCol.setVisible(Config.get().isShowAddressTransactionCount());
         getColumns().add(countCol);
 
-        TreeTableColumn<Entry, Number> amountCol = new TreeTableColumn<>("Value");
+        TreeTableColumn<Entry, Number> amountCol = new TreeTableColumn<>("Waarde");
         amountCol.setCellValueFactory((TreeTableColumn.CellDataFeatures<Entry, Number> param) -> {
             return new ReadOnlyObjectWrapper<>(param.getValue().getValue().getValue());
         });

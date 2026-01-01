@@ -788,17 +788,17 @@ public class HeadersController extends TransactionFormController implements Init
 
         if(Sha256Hash.ZERO_HASH.equals(blockTransaction.getBlockHash()) && blockTransaction.getHeight() == 0 && headersForm.getSigningWallet() == null) {
             //A zero block hash indicates that this blocktransaction is incomplete and the height is likely incorrect if we are not sending a tx
-            blockStatus.setText("Unknown");
+            blockStatus.setText("Niet geweten");
         } else if(currentHeight == null) {
-            blockStatus.setText(blockTransaction.getHeight() > 0 ? "Confirmed" : "Unconfirmed");
+            blockStatus.setText(blockTransaction.getHeight() > 0 ? "Bevestiging" : "Niet bevestigd");
         } else {
             int confirmations = blockTransaction.getHeight() > 0 ? currentHeight - blockTransaction.getHeight() + 1 : 0;
             if(confirmations == 0) {
                 blockStatus.setText("Unconfirmed");
             } else if(confirmations == 1) {
-                blockStatus.setText(confirmations + " Confirmation");
+                blockStatus.setText(confirmations + " Bevestiging");
             } else {
-                blockStatus.setText(confirmations + " Confirmations");
+                blockStatus.setText(confirmations + " Bevestigingen");
             }
 
             if(confirmations <= BlockTransactionHash.BLOCKS_TO_CONFIRM) {
@@ -1221,8 +1221,8 @@ public class HeadersController extends TransactionFormController implements Init
         if(fee.getValue() > 0) {
             double feeRateAmt = fee.getValue() / headersForm.getTransaction().getVirtualSize();
             if(feeRateAmt > AppServices.getLongFeeRatesRange().getLast()) {
-                Optional<ButtonType> optType = AppServices.showWarningDialog("Very high fee rate!",
-                        "This transaction pays a very high fee rate of " + String.format("%.0f", feeRateAmt) + " sats/vB.\n\nBroadcast this transaction?", ButtonType.YES, ButtonType.NO);
+                Optional<ButtonType> optType = AppServices.showWarningDialog("Zeer hoge transactiekosten!",
+                        "Deze transactie betaald een hoge kosten van " + String.format("%.0f", feeRateAmt) + " sats/vB.\n\nBroadcast this transaction?", ButtonType.YES, ButtonType.NO);
                 if(optType.isPresent() && optType.get() == ButtonType.NO) {
                     broadcastButton.setDisable(false);
                     return;

@@ -15,7 +15,7 @@ public class TransactionsTreeTable extends CoinTreeTable {
         updateAll(rootEntry);
         setShowRoot(false);
 
-        TreeTableColumn<Entry, Entry> dateCol = new TreeTableColumn<>("Date");
+        TreeTableColumn<Entry, Entry> dateCol = new TreeTableColumn<>("Datum");
         dateCol.setCellValueFactory((TreeTableColumn.CellDataFeatures<Entry, Entry> param) -> {
             return new ReadOnlyObjectWrapper<>(param.getValue().getValue());
         });
@@ -23,7 +23,7 @@ public class TransactionsTreeTable extends CoinTreeTable {
         dateCol.setSortable(true);
         getColumns().add(dateCol);
 
-        TreeTableColumn<Entry, String> labelCol = new TreeTableColumn<>("Label");
+        TreeTableColumn<Entry, String> labelCol = new TreeTableColumn<>("Mededeling");
         labelCol.setCellValueFactory((TreeTableColumn.CellDataFeatures<Entry, String> param) -> {
             return param.getValue().getValue().labelProperty();
         });
@@ -31,7 +31,7 @@ public class TransactionsTreeTable extends CoinTreeTable {
         labelCol.setSortable(true);
         getColumns().add(labelCol);
 
-        TreeTableColumn<Entry, Number> amountCol = new TreeTableColumn<>("Value");
+        TreeTableColumn<Entry, Number> amountCol = new TreeTableColumn<>("Waarde");
         amountCol.setCellValueFactory((TreeTableColumn.CellDataFeatures<Entry, Number> param) -> {
             return new ReadOnlyObjectWrapper<>(param.getValue().getValue().getValue());
         });
@@ -39,7 +39,7 @@ public class TransactionsTreeTable extends CoinTreeTable {
         amountCol.setSortable(true);
         getColumns().add(amountCol);
 
-        TreeTableColumn<Entry, Number> balanceCol = new TreeTableColumn<>("Balance");
+        TreeTableColumn<Entry, Number> balanceCol = new TreeTableColumn<>("Balans");
         balanceCol.setCellValueFactory((TreeTableColumn.CellDataFeatures<Entry, Number> param) -> {
             return param.getValue().getValue() instanceof TransactionEntry ? ((TransactionEntry)param.getValue().getValue()).balanceProperty() : new ReadOnlyObjectWrapper<>(null);
         });

@@ -47,7 +47,7 @@ public class TransactionEntry extends Entry implements Comparable<TransactionEnt
 
             @Override
             public String getName() {
-                return "confirmations";
+                return "bevestigingen";
             }
         };
 
@@ -77,7 +77,7 @@ public class TransactionEntry extends Entry implements Comparable<TransactionEnt
 
     @Override
     public String getEntryType() {
-        return "Transaction";
+        return "Transactie";
     }
 
     @Override
@@ -236,7 +236,7 @@ public class TransactionEntry extends Entry implements Comparable<TransactionEnt
 
                 @Override
                 public String getName() {
-                    return "balance";
+                    return "balans";
                 }
             };
         }

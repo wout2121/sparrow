@@ -112,7 +112,7 @@ public class ReceiveDialog extends WalletDialog {
         SparrowTerminal.get().getGuiThread().invokeLater(() -> {
             Set<BlockTransactionHashIndex> currentOutputs = currentEntry.getNode().getTransactionOutputs();
             if(AppServices.onlineProperty().get() && currentOutputs.isEmpty()) {
-                lastUsed.setText("Never");
+                lastUsed.setText("Nooit");
             } else if(!currentOutputs.isEmpty()) {
                 long count = currentOutputs.size();
                 BlockTransactionHashIndex lastUsedReference = currentOutputs.stream().skip(count - 1).findFirst().get();

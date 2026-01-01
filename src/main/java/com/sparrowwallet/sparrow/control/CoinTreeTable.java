@@ -120,7 +120,7 @@ public class CoinTreeTable extends TreeTableView<Entry> {
 
     protected Node getDefaultPlaceholder(Wallet wallet) {
         StackPane stackPane = new StackPane();
-        stackPane.getChildren().add(AppServices.isConnecting() ? new Label("Loading transactions...") : new Label("No transactions"));
+        stackPane.getChildren().add(AppServices.isConnecting() ? new Label("Transacties laden...") : new Label("Geen transacties"));
 
         if(Config.get().getServerType() == ServerType.BITCOIN_CORE && !AppServices.isConnecting()) {
             Hyperlink hyperlink = new Hyperlink();

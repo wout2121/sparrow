@@ -134,7 +134,7 @@ public class BatchedElectrumServerRpc implements ElectrumServerRpc {
     @SuppressWarnings("unchecked")
     public Map<String, String> subscribeScriptHashes(Transport transport, Wallet wallet, Map<String, String> pathScriptHashes) {
         PagedBatchRequestBuilder<String, String> batchRequest = PagedBatchRequestBuilder.create(transport, idCounter).keysType(String.class).returnType(String.class);
-        EventManager.get().post(new WalletHistoryStatusEvent(wallet, true, "Finding transactions for " + nodeRangesToString(pathScriptHashes.keySet())));
+        EventManager.get().post(new WalletHistoryStatusEvent(wallet, true, "Vind transacties voor " + nodeRangesToString(pathScriptHashes.keySet())));
 
         for(String path : pathScriptHashes.keySet()) {
             batchRequest.add(path, "blockchain.scripthash.subscribe", pathScriptHashes.get(path));

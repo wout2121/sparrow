@@ -1277,7 +1277,7 @@ public class AppServices {
         currentBlockHeight = event.getHeight();
         System.setProperty(Network.BLOCK_HEIGHT_PROPERTY, Integer.toString(currentBlockHeight));
         latestBlockHeader = event.getBlockHeader();
-        String status = "Updating to new block height " + event.getHeight();
+        String status = "Updaten blok hoogte " + event.getHeight();
         EventManager.get().post(new StatusEvent(status));
         newBlockSubject.onNext(event);
     }

@@ -71,8 +71,8 @@ public class WalletDialog extends DialogWindow {
         if(masterWallet.isEncrypted()) {
             String walletId = getWalletForm().getWalletId();
 
-            TextInputDialogBuilder builder = new TextInputDialogBuilder().setTitle("Wallet Password");
-            builder.setDescription("Enter the wallet password:");
+            TextInputDialogBuilder builder = new TextInputDialogBuilder().setTitle("Portefeuille Wachtoord");
+            builder.setDescription("Vul wachtoord in portefeuille:");
             builder.setPasswordInput(true);
 
             String password = builder.build().showDialog(SparrowTerminal.get().getGui());
@@ -80,7 +80,7 @@ public class WalletDialog extends DialogWindow {
                 Platform.runLater(() -> {
                     Storage.KeyDerivationService keyDerivationService = new Storage.KeyDerivationService(getWalletForm().getStorage(), new SecureString(password), true);
                     keyDerivationService.setOnSucceeded(workerStateEvent -> {
-                        EventManager.get().post(new StorageEvent(walletId, TimedEvent.Action.END, "Done"));
+                        EventManager.get().post(new StorageEvent(walletId, TimedEvent.Action.END, "Klaar"));
                         ECKey encryptionFullKey = keyDerivationService.getValue();
                         Key key = new Key(encryptionFullKey.getPrivKeyBytes(), getWalletForm().getStorage().getKeyDeriver().getSalt(), EncryptionType.Deriver.ARGON2);
                         encryptionFullKey.clear();
@@ -98,7 +98,7 @@ public class WalletDialog extends DialogWindow {
                             log.error("Error deriving wallet key", keyDerivationService.getException());
                         }
                     });
-                    EventManager.get().post(new StorageEvent(walletId, TimedEvent.Action.START, "Decrypting wallet..."));
+                    EventManager.get().post(new StorageEvent(walletId, TimedEvent.Action.START, "Ontgrendel portefeuille..."));
                     keyDerivationService.start();
                 });
             }

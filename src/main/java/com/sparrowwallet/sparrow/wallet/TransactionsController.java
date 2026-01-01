@@ -97,7 +97,7 @@ public class TransactionsController extends WalletFormController implements Init
         });
 
         transactionsMasterDetail.setShowDetailNode(Config.get().isShowLoadingLog());
-        loadingLog.appendText("Wallet loading history for " + getWalletForm().getWallet().getFullDisplayName());
+        loadingLog.appendText("Portefeuille geschiedenis laden voor " + getWalletForm().getWallet().getFullDisplayName());
         loadingLog.setEditable(false);
     }
 
@@ -229,7 +229,7 @@ public class TransactionsController extends WalletFormController implements Init
             String logMessage = event.getStatusMessage();
             if(logMessage == null) {
                 if(event instanceof WalletHistoryFinishedEvent) {
-                    logMessage = "Finished loading.";
+                    logMessage = "Klaar met laden.";
                 } else if(event instanceof WalletHistoryFailedEvent) {
                     logMessage = event.getErrorMessage();
                 }

@@ -263,10 +263,10 @@ public class GeneralSettingsController extends SettingsDetailController {
         protected void updateItem(Server server, boolean empty) {
             super.updateItem(server, empty);
             if(empty || server == null || server == BlockExplorer.NONE.getServer()) {
-                setText("None");
+                setText("Geen");
                 setGraphic(null);
             } else if(server == CUSTOM_BLOCK_EXPLORER) {
-                setText("Custom...");
+                setText("Aangepaste...");
                 setGraphic(null);
             } else {
                 setText(server.getHost());

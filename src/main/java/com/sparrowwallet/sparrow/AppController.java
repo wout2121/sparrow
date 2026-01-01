@@ -54,6 +54,9 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.input.*;
+
+import javafx.scene.image.Image;
+
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.*;
@@ -85,10 +88,59 @@ public class AppController implements Initializable {
     public static final int TAB_LABEL_MAX_WIDTH = 300;
     public static final double TAB_LABEL_GRAPHIC_OPACITY_INACTIVE = 0.8;
     public static final double TAB_LABEL_GRAPHIC_OPACITY_ACTIVE = 0.95;
-    public static final String LOADING_TRANSACTIONS_MESSAGE = "Loading wallet, select Transactions tab to view...";
-    public static final String CONNECTION_FAILED_PREFIX = "Connection failed: ";
-    public static final String TRYING_ANOTHER_SERVER_MESSAGE = "trying another server...";
+    public static final String LOADING_TRANSACTIONS_MESSAGE = "Laad Portefeuille, selecteer Portefeuille tab om te bekijken...";
+    public static final String CONNECTION_FAILED_PREFIX = "Verbinding faalt: ";
+    public static final String TRYING_ANOTHER_SERVER_MESSAGE = "Probeer een andere server...";
     public static final String JPACKAGE_APP_PATH = "jpackage.app-path";
+
+
+
+@FXML
+private void changeWalletIcon() {
+    Stage window = new Stage();
+    FileChooser fileChooser = new FileChooser();
+    fileChooser.setTitle("Selecteer portefeuille-icoon voor extra privacy");
+    fileChooser.getExtensionFilters().add(
+        new FileChooser.ExtensionFilter("Afbeeldingen", "*.png", "*.jpg", "*.jpeg")
+    );
+    
+    AppServices.moveToActiveWindowScreen(window, 800, 450);
+    File file = fileChooser.showOpenDialog(window);
+    
+    if(file != null) {
+        try {
+            Image icon = new Image(file.toURI().toString());
+            Stage mainStage = (Stage) tabs.getScene().getWindow();
+            mainStage.getIcons().setAll(icon);
+        } catch(Exception e) {
+            log.error("Fout bij laden icoon", e);
+            AppServices.showErrorDialog("Fout", "Kan icoon niet laden: " + e.getMessage());
+        }
+    }
+}
+
+@FXML
+private void changeAppTitle() {
+    Stage mainStage = (Stage) tabs.getScene().getWindow();
+    
+    TextInputDialog dialog = new TextInputDialog(mainStage.getTitle());
+    dialog.initOwner(rootStack.getScene().getWindow());
+    dialog.setTitle("Wijzig Applicatienaam voor extra privacy");
+    dialog.setHeaderText(null);
+    dialog.setContentText("Nieuwe naam:");
+    
+    dialog.showAndWait().ifPresent(title -> {
+        if(title != null && !title.isEmpty()) {
+            mainStage.setTitle(title);
+        }
+    });
+}
+
+
+
+
+
+
 
     @FXML
     private MenuItem saveTransaction;
@@ -2615,7 +2667,7 @@ public class AppController implements Initializable {
                 saveTransaction.setDisable(true);
                 lockWallet.setDisable(walletTabData.getWalletForm().lockedProperty().get());
                 exportWallet.setDisable(walletTabData.getWallet() == null || !walletTabData.getWallet().isValid() || walletTabData.getWalletForm().isLocked());
-                refreshWallet.setText(walletTabData.getWallet() == null || walletTabData.getWalletForm().getMasterWallet().getChildWallets().stream().allMatch(Wallet::isNested) ? "Refresh Wallet" : "Refresh Wallet Account");
+                refreshWallet.setText(walletTabData.getWallet() == null || walletTabData.getWalletForm().getMasterWallet().getChildWallets().stream().allMatch(Wallet::isNested) ? "Herstart Portefeuille" : "Refresh Wallet Account");
                 showLoadingLog.setDisable(false);
                 showTxHex.setDisable(true);
                 showPayNym.setDisable(exportWallet.isDisable() || !walletTabData.getWallet().hasPaymentCode());

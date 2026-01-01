@@ -222,7 +222,7 @@ public class KeystoreController extends WalletFormController implements Initiali
         if(header != Network.get().getXpubHeader()) {
             String otherPub = extendedKey.getExtendedKey(header);
 
-            MenuItem copyOtherPub = new MenuItem("Copy " + header.getDisplayName());
+            MenuItem copyOtherPub = new MenuItem("Kopieer " + header.getDisplayName());
             copyOtherPub.setOnAction(AE -> {
                 contextMenu.hide();
                 ClipboardContent content = new ClipboardContent();
@@ -233,7 +233,7 @@ public class KeystoreController extends WalletFormController implements Initiali
 
             xpubField.setText(Network.get().getXpubHeader().getDisplayName() + " / " + header.getDisplayName() + ":");
             switchXpubHeader.setDisable(false);
-            switchXpubHeader.setTooltip(new Tooltip("Show as " + header.getDisplayName()));
+            switchXpubHeader.setTooltip(new Tooltip("Toon als " + header.getDisplayName()));
         } else {
             xpubField.setText(Network.get().getXpubHeader().getDisplayName() + ":");
             switchXpubHeader.setDisable(true);
@@ -302,7 +302,7 @@ public class KeystoreController extends WalletFormController implements Initiali
         cardServiceButtons.setVisible(keystore.getWalletModel().isCard());
         backupButton.setDisable(!keystore.getWalletModel().supportsBackup());
 
-        importButton.setText(keystore.getSource() == KeystoreSource.SW_WATCH ? "Import..." : "Replace...");
+        importButton.setText(keystore.getSource() == KeystoreSource.SW_WATCH ? "Importeer" : "Vervang");
         importButton.setTooltip(new Tooltip(keystore.getSource() == KeystoreSource.SW_WATCH ? "Import a keystore from an external source" : "Replace this keystore with another source"));
 
         boolean editable = (keystore.getSource() == KeystoreSource.SW_WATCH);
@@ -324,14 +324,14 @@ public class KeystoreController extends WalletFormController implements Initiali
     private String getTypeLabel(Keystore keystore) {
         switch (keystore.getSource()) {
             case HW_USB:
-                return "Connected Wallet (" + keystore.getWalletModel().toDisplayString() + ")";
+                return "Verbonden Portefeuille (" + keystore.getWalletModel().toDisplayString() + ")";
             case HW_AIRGAPPED:
                 return "Airgapped Wallet (" + keystore.getWalletModel().toDisplayString() + ")";
             case SW_SEED:
-                return "Software Wallet";
+                return "Software Portefeuille";
             case SW_WATCH:
             default:
-                return "Watch Only Wallet";
+                return "Alleen Te Bekijken Portefeuille";
         }
     }
 
@@ -428,15 +428,15 @@ public class KeystoreController extends WalletFormController implements Initiali
             if(password.isPresent()) {
                 Storage.DecryptWalletService decryptWalletService = new Storage.DecryptWalletService(copy, password.get());
                 decryptWalletService.setOnSucceeded(workerStateEvent -> {
-                    EventManager.get().post(new StorageEvent(getWalletForm().getWalletId(), TimedEvent.Action.END, "Done"));
+                    EventManager.get().post(new StorageEvent(getWalletForm().getWalletId(), TimedEvent.Action.END, "Klaar"));
                     Wallet decryptedWallet = decryptWalletService.getValue();
                     showPrivate(decryptedWallet.getKeystores().get(keystoreIndex));
                 });
                 decryptWalletService.setOnFailed(workerStateEvent -> {
-                    EventManager.get().post(new StorageEvent(getWalletForm().getWalletId(), TimedEvent.Action.END, "Failed"));
-                    AppServices.showErrorDialog("Incorrect Password", decryptWalletService.getException().getMessage());
+                    EventManager.get().post(new StorageEvent(getWalletForm().getWalletId(), TimedEvent.Action.END, "Gefaald"));
+                    AppServices.showErrorDialog("Niet juist wachtwoord", decryptWalletService.getException().getMessage());
                 });
-                EventManager.get().post(new StorageEvent(getWalletForm().getWalletId(), TimedEvent.Action.START, "Decrypting wallet..."));
+                EventManager.get().post(new StorageEvent(getWalletForm().getWalletId(), TimedEvent.Action.START, "Decrypting portefeuille..."));
                 decryptWalletService.start();
             }
         } else {
