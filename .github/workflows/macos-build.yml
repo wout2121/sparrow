@@ -32,8 +32,26 @@ jobs:
     - name: Build with Gradle (JPackage)
       run: ./gradlew jpackage
       
+    - name: Debug - List build directory
+      run: |
+        echo "=== Current working directory ==="
+        pwd
+        echo ""
+        echo "=== Contents of build/ directory ==="
+        ls -la build/ || echo "build/ directory not found"
+        echo ""
+        echo "=== Recursive build/ structure ==="
+        ls -R build/ || echo "Cannot list build/"
+        echo ""
+        echo "=== Search for all DMG files ==="
+        find . -name "*.dmg" -type f || echo "No DMG files found"
+      
     - name: Upload DMG
       uses: actions/upload-artifact@v4
       with:
         name: Sparrow-macOS-DMG
-        path: build/jpackage/*.dmg
+        path: |
+          build/jpackage/*.dmg
+          build/**/*.dmg
+      if-no-files-found: warn
+
