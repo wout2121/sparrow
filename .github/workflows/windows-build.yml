@@ -41,3 +41,6 @@ jobs:
         name: Sparrow-Windows-Installer
         path: build/jpackage/
 
+    - name: Build with Gradle (JPackage)
+      run: ./gradlew jpackage --stacktrace --info
+
