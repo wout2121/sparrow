@@ -7,6 +7,7 @@ import com.sparrowwallet.drongo.wallet.MnemonicException;
 import com.sparrowwallet.drongo.wallet.StandardAccount;
 import com.sparrowwallet.drongo.wallet.Wallet;
 import com.sparrowwallet.sparrow.AppServices;
+import com.sparrowwallet.sparrow.net.ServerType;
 import com.sparrowwallet.sparrow.SparrowWallet;
 import javafx.concurrent.ScheduledService;
 import javafx.concurrent.Service;
@@ -485,7 +486,16 @@ public class Storage {
     }
 
     public static File getWalletsDir() {
-        File walletsDir = new File(getSparrowDir(), WALLETS_DIR);
+        File walletsDir = Config.get().getWalletsDir();
+        if(walletsDir != null) {
+            if(!walletsDir.exists() && (walletsDir.getParentFile() == null || !walletsDir.getParentFile().exists() || !walletsDir.getParentFile().canWrite())) {
+                log.info("Configured wallets directory " + walletsDir.getAbsolutePath() + " is not reachable, reverting to default");
+                walletsDir = null;
+            }
+        }
+        if(walletsDir == null) {
+            walletsDir = new File(getSparrowDir(), WALLETS_DIR);
+        }
         if(!walletsDir.exists()) {
             createOwnerOnlyDirectory(walletsDir);
         }
@@ -494,8 +504,23 @@ public class Storage {
     }
 
     public static File getCertificateFile(String host) {
-        File certsDir = getCertsDir();
-        File[] certs = certsDir.listFiles((dir, name) -> name.equals(host));
+        return findCertFile(getCertName(host));
+    }
+
+    public static void saveCertificate(String host, Certificate cert) {
+        writeCertPem(getCertName(host), cert);
+    }
+
+    public static File getCaCertificateFile(String host) {
+        return findCertFile(host + ".cacert");
+    }
+
+    public static void saveCaCertificate(String host, Certificate cert) {
+        writeCertPem(host + ".cacert", cert);
+    }
+
+    private static File findCertFile(String filename) {
+        File[] certs = getCertsDir().listFiles((dir, name) -> name.equals(filename));
         if(certs != null && certs.length > 0) {
             return certs[0];
         }
@@ -503,8 +528,8 @@ public class Storage {
         return null;
     }
 
-    public static void saveCertificate(String host, Certificate cert) {
-        try(FileWriter writer = new FileWriter(new File(getCertsDir(), host))) {
+    private static void writeCertPem(String filename, Certificate cert) {
+        try(FileWriter writer = new FileWriter(new File(getCertsDir(), filename))) {
             writer.write("-----BEGIN CERTIFICATE-----\n");
             writer.write(Base64.getEncoder().encodeToString(cert.getEncoded()).replaceAll("(.{64})", "$1\n"));
             writer.write("\n-----END CERTIFICATE-----\n");
@@ -513,6 +538,14 @@ public class Storage {
         } catch(IOException e) {
             log.error("Error writing PEM certificate", e);
         }
+    }
+
+    private static String getCertName(String host) {
+        if(Config.get().getServerType() == ServerType.BITCOIN_CORE) {
+            return host + ".bitcoind";
+        }
+
+        return host;
     }
 
     static File getCertsDir() {

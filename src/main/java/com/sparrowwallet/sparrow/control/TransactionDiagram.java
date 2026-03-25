@@ -1,5 +1,6 @@
 package com.sparrowwallet.sparrow.control;
 
+import com.sparrowwallet.drongo.BitcoinUnit;
 import com.sparrowwallet.drongo.KeyPurpose;
 import com.sparrowwallet.drongo.OsType;
 import com.sparrowwallet.drongo.address.Address;
@@ -474,7 +475,7 @@ public class TransactionDiagram extends GridPane {
                     inputValue = input.getValue();
                     Wallet nodeWallet = walletNode.getWallet();
                     StringJoiner joiner = new StringJoiner("\n");
-                    joiner.add("Spending " + getSatsValue(inputValue) + " sats from " + (isFinal() ? nodeWallet.getFullDisplayName() : (nodeWallet.isNested() ? nodeWallet.getDisplayName() : "")) + " " + walletNode);
+                    joiner.add("Spending " + getCoinValue(inputValue) + " from " + (isFinal() ? nodeWallet.getFullDisplayName() : (nodeWallet.isNested() ? nodeWallet.getDisplayName() : "")) + " " + walletNode);
                     joiner.add(input.getHashAsString() + ":" + input.getIndex());
                     joiner.add(walletNode.getAddress().toString());
                     if(input.getLabel() != null) {
@@ -500,7 +501,7 @@ public class TransactionDiagram extends GridPane {
                     } else if(input instanceof AdditionalBlockTransactionHashIndex additionalReference) {
                         inputValue = input.getValue();
                         StringJoiner joiner = new StringJoiner("\n");
-                        joiner.add("Spending " + getSatsValue(inputValue) + " sats from" + (isExpanded() ? ":" : " (click to expand):"));
+                        joiner.add("Spending " + getCoinValue(inputValue) + " from" + (isExpanded() ? ":" : " (click to expand):"));
                         for(BlockTransactionHashIndex additionalInput : additionalReference.getAdditionalInputs()) {
                             joiner.add(getInputDescription(additionalInput));
                         }
@@ -513,7 +514,7 @@ public class TransactionDiagram extends GridPane {
                             TransactionOutput txOutput = blockTransaction.getTransaction().getOutputs().get((int) input.getIndex());
                             Address fromAddress = txOutput.getScript().getToAddress();
                             inputValue = txOutput.getValue();
-                            tooltip.setText("Input of " + getSatsValue(inputValue) + " sats\n" + input.getHashAsString() + ":" + input.getIndex() + (fromAddress != null ? "\n" + fromAddress : ""));
+                            tooltip.setText("Input of " + getCoinValue(inputValue) + "\n" + input.getHashAsString() + ":" + input.getIndex() + (fromAddress != null ? "\n" + fromAddress : ""));
 
                             ContextMenu contextMenu = new LabelContextMenu(fromAddress, inputValue);
                             label.setContextMenu(contextMenu);
@@ -532,6 +533,7 @@ public class TransactionDiagram extends GridPane {
                 tooltip.setShowDelay(new Duration(TOOLTIP_SHOW_DELAY));
                 tooltip.setShowDuration(Duration.INDEFINITE);
                 tooltip.setWrapText(true);
+                tooltip.setSkin(new AddressTooltipSkin(tooltip));
                 Window activeWindow = AppServices.getActiveWindow();
                 if(activeWindow != null) {
                     tooltip.setMaxWidth(activeWindow.getWidth());
@@ -571,13 +573,22 @@ public class TransactionDiagram extends GridPane {
         return input.getLabel() != null && !input.getLabel().isEmpty() ? input.getLabel() : input.getHashAsString().substring(0, 8) + "..:" + input.getIndex();
     }
 
-    String getSatsValue(long amount) {
+    String getCoinValue(long amount) {
         if(Config.get().isHideAmounts()) {
             return CoinLabel.HIDDEN_AMOUNT_TEXT;
         }
 
         UnitFormat format = Config.get().getUnitFormat() == null ? UnitFormat.DOT : Config.get().getUnitFormat();
-        return format.formatSatsValue(amount);
+        BitcoinUnit unit = Config.get().getBitcoinUnit();
+        if(unit == null || unit.equals(BitcoinUnit.AUTO)) {
+            unit = (amount >= BitcoinUnit.getAutoThreshold() ? BitcoinUnit.BTC : BitcoinUnit.SATOSHIS);
+        }
+
+        if(unit.equals(BitcoinUnit.BTC)) {
+            return format.formatBtcValue(amount) + " BTC";
+        }
+
+        return format.formatSatsValue(amount) + " sats";
     }
 
     private Pane getInputsLines(List<Map<BlockTransactionHashIndex, WalletNode>> displayedUtxoSets) {
@@ -727,21 +738,26 @@ public class TransactionDiagram extends GridPane {
         for(Payment payment : displayedPayments) {
             Glyph outputGlyph = GlyphUtils.getOutputGlyph(walletTx, payment);
             boolean labelledPayment = outputGlyph.getStyleClass().stream().anyMatch(style -> List.of("premix-icon", "badbank-icon", "whirlpoolfee-icon", "anchor-icon").contains(style)) || payment instanceof AdditionalPayment || payment.getLabel() != null;
-            Label recipientLabel = new Label(payment.getLabel() == null || payment.getType() == Payment.Type.FAKE_MIX || payment.getType() == Payment.Type.MIX ? payment.toString().substring(0, 8) + "..." : payment.getLabel(), outputGlyph);
+            boolean addressLabel = payment.getLabel() == null || payment.getType() == Payment.Type.FAKE_MIX || payment.getType() == Payment.Type.MIX;
+            Label recipientLabel = new Label(addressLabel ? payment.toString().substring(0, 8) + "..." : payment.getLabel(), outputGlyph);
             recipientLabel.getStyleClass().add("output-label");
             recipientLabel.getStyleClass().add(labelledPayment ? "payment-label" : "recipient-label");
+            if(addressLabel) {
+                recipientLabel.setSkin(new AddressLabelSkin(recipientLabel));
+            }
             Wallet toWallet = walletTx.getToWallet(AppServices.get().getOpenWallets().keySet(), payment);
             WalletNode toNode = payment instanceof WalletNodePayment walletNodePayment ? walletNodePayment.getWalletNode() : null;
             Wallet toBip47Wallet = getBip47SendWallet(payment);
             DnsPayment dnsPayment = DnsPaymentCache.getDnsPayment(payment);
             Tooltip recipientTooltip = new Tooltip((toWallet == null ? (toNode != null ? "Consolidate " : "Pay ") : "Receive ")
-                    + getSatsValue(payment.getAmount()) + " sats to "
+                    + getCoinValue(payment.getAmount()) + " to "
                     + (payment instanceof AdditionalPayment ? (isExpanded() ? "\n" : "(click to expand)\n") + payment : (toWallet == null ? (dnsPayment == null ? (payment.getLabel() == null ? (toNode != null ? toNode : (toBip47Wallet == null ? "external address" : toBip47Wallet.getDisplayName())) : payment.getLabel()) : dnsPayment.toString()) : toWallet.getFullDisplayName()) + "\n" + payment.getDisplayAddress())
                     + (walletTx.isDuplicateAddress(payment) ? " (Duplicate)" : ""));
             recipientTooltip.getStyleClass().add("recipient-label");
             recipientTooltip.setShowDelay(new Duration(TOOLTIP_SHOW_DELAY));
             recipientTooltip.setShowDuration(Duration.INDEFINITE);
             recipientTooltip.setWrapText(true);
+            recipientTooltip.setSkin(new AddressTooltipSkin(recipientTooltip));
             Window activeWindow = AppServices.getActiveWindow();
             if(activeWindow != null) {
                 recipientTooltip.setMaxWidth(activeWindow.getWidth());
@@ -782,10 +798,12 @@ public class TransactionDiagram extends GridPane {
             String changeDesc = changeAddress.toString().substring(0, 8) + "...";
             Label changeLabel = new Label(changeDesc, overGapLimit ? getChangeWarningGlyph() : getChangeGlyph());
             changeLabel.getStyleClass().addAll("output-label", "change-label");
-            Tooltip changeTooltip = new Tooltip("Change of " + getSatsValue(changeEntry.getValue()) + " sats to " + changeNode + "\n" + walletTx.getChangeAddress(changeNode).toString() + (overGapLimit ? "\nAddress is beyond the gap limit!" : ""));
+            changeLabel.setSkin(new AddressLabelSkin(changeLabel));
+            Tooltip changeTooltip = new Tooltip("Change of " + getCoinValue(changeEntry.getValue()) + " to " + changeNode + "\n" + walletTx.getChangeAddress(changeNode).toString() + (overGapLimit ? "\nAddress is beyond the gap limit!" : ""));
             changeTooltip.getStyleClass().add("change-label");
             changeTooltip.setShowDelay(new Duration(TOOLTIP_SHOW_DELAY));
             changeTooltip.setShowDuration(Duration.INDEFINITE);
+            changeTooltip.setSkin(new AddressTooltipSkin(changeTooltip));
             changeLabel.setTooltip(changeTooltip);
             actionBox.getChildren().add(changeLabel);
 
@@ -841,7 +859,7 @@ public class TransactionDiagram extends GridPane {
         Label feeLabel = highFee ? new Label("High Fee", getFeeWarningGlyph()) : new Label("Fee", getFeeGlyph());
         feeLabel.getStyleClass().addAll("output-label", "fee-label");
         String percentage = walletTx.getFeePercentage() < 0.0001d ? "<0.01" : String.format("%.2f", walletTx.getFeePercentage() * 100.0);
-        Tooltip feeTooltip = new Tooltip(walletTx.getFee() < 0 ? "Unknown fee" : "Fee of " + getSatsValue(walletTx.getFee()) + " sats (" + percentage + "%)");
+        Tooltip feeTooltip = new Tooltip(walletTx.getFee() < 0 ? "Unknown fee" : "Fee of " + getCoinValue(walletTx.getFee()) + " (" + percentage + "%)");
         feeTooltip.getStyleClass().add("fee-tooltip");
         feeTooltip.setShowDelay(new Duration(TOOLTIP_SHOW_DELAY));
         feeTooltip.setShowDuration(Duration.INDEFINITE);

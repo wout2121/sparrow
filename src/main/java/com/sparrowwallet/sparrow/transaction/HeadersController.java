@@ -86,6 +86,8 @@ public class HeadersController extends TransactionFormController implements Init
     private static final Pattern RBF_INSUFFICIENT_FEE = Pattern.compile("insufficient fee, rejecting replacement.*?(\\d+\\.?\\d*) < (\\d+\\.?\\d*)");
     private static final Pattern RBF_INSUFFICIENT_FEE_RATE = Pattern.compile("insufficient fee, rejecting replacement.*new feerate (\\d+\\.?\\d*)[^\\d]*(\\d+\\.?\\d*)[^\\d]*");
 
+    private static final double FEE_MULTIPLE_LIMIT = 100d;
+
     private HeadersForm headersForm;
 
     @FXML
@@ -266,18 +268,28 @@ public class HeadersController extends TransactionFormController implements Init
         return headersForm;
     }
 
+    private void setTransactionLocktime(Transaction tx, long locktime) {
+        tx.setLocktime(locktime);
+        if(headersForm.getPsbt() != null) {
+            headersForm.getPsbt().setFallbackLocktime(locktime);
+        }
+    }
+
     private void initializeView() {
         Transaction tx = headersForm.getTransaction();
 
         updateTxId();
 
-        version.setValueFactory(new IntegerSpinner.ValueFactory(1, 2, (int)tx.getVersion()));
+        version.setValueFactory(new IntegerSpinner.ValueFactory(1, 3, (int)tx.getVersion()));
         version.valueProperty().addListener((obs, oldValue, newValue) -> {
-            if(newValue == null || newValue < 1 || newValue > 2) {
+            if(newValue == null || newValue < 1 || newValue > 3) {
                 return;
             }
 
             tx.setVersion(newValue);
+            if(headersForm.getPsbt() != null) {
+                headersForm.getPsbt().setTxVersion((long)newValue);
+            }
             if(oldValue != null) {
                 EventManager.get().post(new TransactionChangedEvent(tx));
             }
@@ -294,7 +306,7 @@ public class HeadersController extends TransactionFormController implements Init
                     locktimeFieldset.getChildren().remove(locktimeBlockField);
                     locktimeFieldset.getChildren().remove(locktimeNoneField);
                     locktimeFieldset.getChildren().add(locktimeNoneField);
-                    tx.setLocktime(0);
+                    setTransactionLocktime(tx, 0);
                     if(old_toggle != null) {
                         EventManager.get().post(new TransactionChangedEvent(tx));
                     }
@@ -307,7 +319,7 @@ public class HeadersController extends TransactionFormController implements Init
                     if(block != null) {
                         locktimeCurrentHeight.setVisible(headersForm.isEditable() && AppServices.getCurrentBlockHeight() != null && block < AppServices.getCurrentBlockHeight());
                         futureBlockWarning.setVisible(AppServices.getCurrentBlockHeight() != null && block > AppServices.getCurrentBlockHeight());
-                        tx.setLocktime(block);
+                        setTransactionLocktime(tx, block);
                         if(old_toggle != null) {
                             EventManager.get().post(new TransactionChangedEvent(tx));
                         }
@@ -321,7 +333,7 @@ public class HeadersController extends TransactionFormController implements Init
                     if(date != null) {
                         locktimeDate.setDateTimeValue(date);
                         futureDateWarning.setVisible(date.isAfter(LocalDateTime.now()));
-                        tx.setLocktime(date.toEpochSecond(OffsetDateTime.now(ZoneId.systemDefault()).getOffset()));
+                        setTransactionLocktime(tx, date.atZone(ZoneId.systemDefault()).toEpochSecond());
                         if(old_toggle != null) {
                             EventManager.get().post(new TransactionChangedEvent(tx));
                         }
@@ -359,7 +371,7 @@ public class HeadersController extends TransactionFormController implements Init
                 return;
             }
 
-            tx.setLocktime(newValue);
+            setTransactionLocktime(tx, newValue);
             locktimeCurrentHeight.setVisible(headersForm.isEditable() && AppServices.getCurrentBlockHeight() != null && newValue < AppServices.getCurrentBlockHeight());
             futureBlockWarning.setVisible(AppServices.getCurrentBlockHeight() != null && newValue > AppServices.getCurrentBlockHeight());
             if(oldValue != null) {
@@ -384,7 +396,7 @@ public class HeadersController extends TransactionFormController implements Init
             int caret = locktimeDate.getEditor().getCaretPosition();
             locktimeDate.getEditor().setText(newValue.format(DateTimeFormatter.ofPattern(locktimeDate.getFormat())));
             locktimeDate.getEditor().positionCaret(caret);
-            tx.setLocktime(newValue.toEpochSecond(OffsetDateTime.now(ZoneId.systemDefault()).getOffset()));
+            setTransactionLocktime(tx, newValue.atZone(ZoneId.systemDefault()).toEpochSecond());
             futureDateWarning.setVisible(newValue.isAfter(LocalDateTime.now()));
             if(oldValue != null) {
                 EventManager.get().post(new TransactionChangedEvent(tx));
@@ -980,7 +992,7 @@ public class HeadersController extends TransactionFormController implements Init
         //TODO: Remove once Cobo Vault support has been removed
         boolean addLegacyEncodingOption = headersForm.getSigningWallet().getKeystores().stream().anyMatch(keystore -> keystore.getWalletModel().showLegacyQR());
         boolean addBbqrOption = headersForm.getSigningWallet().getKeystores().stream().anyMatch(keystore -> keystore.getWalletModel().showBbqr());
-        boolean selectBbqrOption = headersForm.getSigningWallet().getKeystores().stream().allMatch(keystore -> keystore.getWalletModel().selectBbqr());
+        QREncoding encoding = headersForm.getSigningWallet().getKeystores().stream().allMatch(keystore -> keystore.getWalletModel().selectBbqr()) ? QREncoding.BBQR : QREncoding.UR;
 
         //Don't include non witness utxo fields for segwit wallets when displaying the PSBT as a QR - it can add greatly to the time required for scanning
         boolean includeNonWitnessUtxos = !Arrays.asList(ScriptType.WITNESS_TYPES).contains(headersForm.getSigningWallet().getScriptType());
@@ -988,7 +1000,7 @@ public class HeadersController extends TransactionFormController implements Init
 
         CryptoPSBT cryptoPSBT = new CryptoPSBT(psbtBytes);
         BBQR bbqr = addBbqrOption ? new BBQR(BBQRType.PSBT, psbtBytes) : null;
-        QRDisplayDialog qrDisplayDialog = new QRDisplayDialog(cryptoPSBT.toUR(), bbqr, addLegacyEncodingOption, true, selectBbqrOption);
+        QRDisplayDialog qrDisplayDialog = new QRDisplayDialog(cryptoPSBT.toUR(), bbqr, addLegacyEncodingOption, true, encoding);
         qrDisplayDialog.initOwner(toggleButton.getScene().getWindow());
         Optional<ButtonType> optButtonType = qrDisplayDialog.showAndWait();
         if(optButtonType.isPresent() && optButtonType.get().getButtonData() == ButtonBar.ButtonData.OK_DONE) {
@@ -1220,9 +1232,9 @@ public class HeadersController extends TransactionFormController implements Init
 
         if(fee.getValue() > 0) {
             double feeRateAmt = fee.getValue() / headersForm.getTransaction().getVirtualSize();
-            if(feeRateAmt > AppServices.getLongFeeRatesRange().getLast()) {
+            if(feeRateAmt > AppServices.getLongFeeRatesRange().getLast() || (AppServices.getTargetBlockFeeRates() != null && feeRateAmt > AppServices.getDefaultFeeRate() * FEE_MULTIPLE_LIMIT)) {
                 Optional<ButtonType> optType = AppServices.showWarningDialog("Zeer hoge transactiekosten!",
-                        "Deze transactie betaald een hoge kosten van " + String.format("%.0f", feeRateAmt) + " sats/vB.\n\nBroadcast this transaction?", ButtonType.YES, ButtonType.NO);
+                        "Deze transactie betaalt een hoge kosten van " + String.format("%.0f", feeRateAmt) + " sats/vB.\n\nDeze transactie broadcasten?", ButtonType.YES, ButtonType.NO);
                 if(optType.isPresent() && optType.get() == ButtonType.NO) {
                     broadcastButton.setDisable(false);
                     return;
@@ -1358,7 +1370,8 @@ public class HeadersController extends TransactionFormController implements Init
             byte[] txBytes = transaction.bitcoinSerialize();
             UR ur = UR.fromBytes(txBytes);
             BBQR bbqr = new BBQR(BBQRType.TXN, txBytes);
-            QRDisplayDialog qrDisplayDialog = new QRDisplayDialog(ur, bbqr, false, false, false);
+            String raw = Utils.bytesToHex(txBytes);
+            QRDisplayDialog qrDisplayDialog = new QRDisplayDialog(ur, bbqr, raw, false, false, QREncoding.UR);
             qrDisplayDialog.initOwner(showTransactionButton.getScene().getWindow());
             qrDisplayDialog.showAndWait();
         } catch (Exception exception) {
@@ -1438,7 +1451,7 @@ public class HeadersController extends TransactionFormController implements Init
     public void transactionChanged(TransactionChangedEvent event) {
         if(headersForm.getTransaction().equals(event.getTransaction())) {
             updateTxId();
-            boolean locktimeEnabled = headersForm.getTransaction().isLocktimeSequenceEnabled();
+            boolean locktimeEnabled = headersForm.isEditable() && headersForm.getTransaction().isLocktimeSequenceEnabled();
             locktimeNoneType.setDisable(!locktimeEnabled);
             locktimeBlockType.setDisable(!locktimeEnabled);
             locktimeBlock.setDisable(!locktimeEnabled);
@@ -1526,6 +1539,7 @@ public class HeadersController extends TransactionFormController implements Init
 
     @Subscribe
     public void unitFormatChanged(UnitFormatChangedEvent event) {
+        transactionDiagram.update(transactionDiagram.getWalletTransaction());
         fee.refresh(event.getUnitFormat(), event.getBitcoinUnit());
     }
 
@@ -1625,6 +1639,7 @@ public class HeadersController extends TransactionFormController implements Init
                 broadcastButtonBox.setVisible(true);
             } else {
                 signButtonBox.setVisible(true);
+                event.getPsbt().addKeyPathInformation(event.getSigningWallet());
             }
         }
     }

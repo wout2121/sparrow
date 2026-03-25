@@ -7,6 +7,7 @@ import com.sparrowwallet.sparrow.UnitFormat;
 import com.sparrowwallet.sparrow.Mode;
 import com.sparrowwallet.sparrow.Theme;
 import com.sparrowwallet.sparrow.control.QRDensity;
+import com.sparrowwallet.sparrow.control.QREncoding;
 import com.sparrowwallet.sparrow.control.WebcamResolution;
 import com.sparrowwallet.sparrow.net.*;
 import com.sparrowwallet.sparrow.wallet.FeeRatesSelection;
@@ -46,6 +47,7 @@ public class Config {
     private boolean checkNewVersions = true;
     private Theme theme;
     private boolean openWalletsInNewWindows = false;
+    private boolean chunkAddresses = true;
     private boolean hideEmptyUsedAddresses = false;
     private boolean hideAmounts = false;
     private boolean showTransactionHex = true;
@@ -57,11 +59,14 @@ public class Config {
     private Boolean connectToBroadcast;
     private Boolean connectToResolve;
     private Boolean suggestSendToMany;
+    private Boolean suggestChangeWalletsDir;
+    private File walletsDir;
     private List<File> recentWalletFiles;
     private Integer keyDerivationPeriod;
     private long dustAttackThreshold = DUST_ATTACK_THRESHOLD_SATS;
     private int enumerateHwPeriod = ENUMERATE_HW_PERIOD_SECS;
     private QRDensity qrDensity;
+    private QREncoding qrEncoding;
     private WebcamResolution webcamResolution;
     private boolean mirrorCapture = true;
     private boolean useZbar = true;
@@ -295,6 +300,15 @@ public class Config {
         flush();
     }
 
+    public boolean isChunkAddresses() {
+        return chunkAddresses;
+    }
+
+    public void setChunkAddresses(boolean chunkAddresses) {
+        this.chunkAddresses = chunkAddresses;
+        flush();
+    }
+
     public boolean isHideEmptyUsedAddresses() {
         return hideEmptyUsedAddresses;
     }
@@ -394,6 +408,24 @@ public class Config {
         flush();
     }
 
+    public Boolean getSuggestChangeWalletsDir() {
+        return suggestChangeWalletsDir;
+    }
+
+    public void setSuggestChangeWalletsDir(Boolean suggestChangeWalletsDir) {
+        this.suggestChangeWalletsDir = suggestChangeWalletsDir;
+        flush();
+    }
+
+    public File getWalletsDir() {
+        return walletsDir;
+    }
+
+    public void setWalletsDir(File walletsDir) {
+        this.walletsDir = walletsDir;
+        flush();
+    }
+
     public List<File> getRecentWalletFiles() {
         return recentWalletFiles;
     }
@@ -426,6 +458,15 @@ public class Config {
 
     public void setQrDensity(QRDensity qrDensity) {
         this.qrDensity = qrDensity;
+        flush();
+    }
+
+    public QREncoding getQrEncoding() {
+        return qrEncoding;
+    }
+
+    public void setQrEncoding(QREncoding qrEncoding) {
+        this.qrEncoding = qrEncoding;
         flush();
     }
 

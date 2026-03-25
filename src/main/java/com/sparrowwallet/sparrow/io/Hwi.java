@@ -17,6 +17,9 @@ import com.sparrowwallet.sparrow.SparrowWallet;
 import com.sparrowwallet.sparrow.control.BitBoxPairingDialog;
 import com.sparrowwallet.sparrow.control.TextfieldDialog;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.MapChangeListener;
+import javafx.collections.ObservableMap;
 import javafx.concurrent.ScheduledService;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
@@ -93,7 +96,7 @@ public class Hwi {
             } catch(CardNotPresentException e) {
                 //ignore
             } catch(CardException e) {
-                log.error("Error reading card", e);
+                log.info("Error reading card", e);
             }
         }
 
@@ -142,9 +145,8 @@ public class Hwi {
         }
     }
 
-    public Map<StandardAccount, String> getXpubs(Device device, String passphrase, Map<StandardAccount, String> accountDerivationPaths) throws ImportException {
-        Map<StandardAccount, String> accountXpubs = new LinkedHashMap<>();
-        for(Map.Entry<StandardAccount, String> entry : accountDerivationPaths.entrySet()) {
+    public Map<WalletType, String> getXpubs(Device device, String passphrase, Map<WalletType, String> accountDerivationPaths, Map<WalletType, String> accountXpubs) throws ImportException {
+        for(Map.Entry<WalletType, String> entry : accountDerivationPaths.entrySet()) {
             accountXpubs.put(entry.getKey(), getXpub(device, passphrase, entry.getValue()));
         }
 
@@ -441,23 +443,26 @@ public class Hwi {
         }
     }
 
-    public static class GetXpubsService extends Service<Map<StandardAccount, String>> {
+    public static class GetXpubsService extends Service<Map<WalletType, String>> {
         private final Device device;
         private final String passphrase;
-        private final Map<StandardAccount, String> accountDerivationPaths;
+        private final Map<WalletType, String> accountDerivationPaths;
 
-        public GetXpubsService(Device device, String passphrase, Map<StandardAccount, String> accountDerivationPaths) {
+        public GetXpubsService(Device device, String passphrase, Map<WalletType, String> accountDerivationPaths) {
             this.device = device;
             this.passphrase = passphrase;
             this.accountDerivationPaths = accountDerivationPaths;
         }
 
         @Override
-        protected Task<Map<StandardAccount, String>> createTask() {
+        protected Task<Map<WalletType, String>> createTask() {
             return new Task<>() {
-                protected Map<StandardAccount, String> call() throws ImportException {
+                protected Map<WalletType, String> call() throws ImportException {
                     Hwi hwi = new Hwi();
-                    return hwi.getXpubs(device, passphrase, accountDerivationPaths);
+                    updateProgress(0, accountDerivationPaths.size());
+                    ObservableMap<WalletType, String> accountXpubs = FXCollections.observableMap(new LinkedHashMap<>());
+                    accountXpubs.addListener((MapChangeListener<? super WalletType, ? super String>) _ -> updateProgress(accountXpubs.size(), accountDerivationPaths.size()));
+                    return hwi.getXpubs(device, passphrase, accountDerivationPaths, accountXpubs);
                 }
             };
         }
@@ -573,7 +578,7 @@ public class Hwi {
                     return null;
                 }));
                 textfieldDialog.getEditor().setStyle("-fx-font-size: 30px;");
-                HBox.setMargin(textfieldDialog.getEditor(), new Insets(0, 60, 0, 60));
+                HBox.setMargin(textfieldDialog.getEditor(), new Insets(0, 65, 0, 65));
                 textfieldDialog.getEditor().requestFocus();
                 textfieldDialog.showAndWait().ifPresentOrElse(future::complete, () -> future.complete(null));
             });
@@ -630,4 +635,6 @@ public class Hwi {
             Platform.runLater(() -> AppServices.showSuccessDialog("Pairing Successful", "The " + deviceInfo + " has been successfully paired."));
         }
     }
+
+    public record WalletType(ScriptType scriptType, StandardAccount standardAccount) {}
 }

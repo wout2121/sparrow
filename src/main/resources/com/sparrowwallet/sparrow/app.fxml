@@ -11,7 +11,7 @@
 <?import com.sparrowwallet.sparrow.Theme?>
 <?import impl.org.controlsfx.skin.DecorationPane?>
 
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="200" minWidth="350" prefHeight="770.0" prefWidth="1070.0" fx:controller="com.sparrowwallet.sparrow.AppController" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1">
+<VBox fx:id="rootBox" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="200" minWidth="350" prefHeight="770.0" prefWidth="1070.0" fx:controller="com.sparrowwallet.sparrow.AppController" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1">
     <children>
         <MenuBar useSystemMenuBar="true">
             <menus>
@@ -115,6 +115,12 @@
                                 </RadioMenuItem>
                             </items>
                         </Menu>
+                        <Menu mnemonicParsing="false" text="Bitcoin Adressen">
+                            <items>
+                                <CheckMenuItem fx:id="chunkAddresses" mnemonicParsing="false" text="Adressen In Blokken Tonen" onAction="#chunkAddresses"/>
+                                <CheckMenuItem fx:id="hideEmptyUsedAddresses" mnemonicParsing="false" text="Verberg Lege Gebruikte Adressen" onAction="#hideEmptyUsedAddresses"/>
+                            </items>
+                        </Menu>
                         <Menu mnemonicParsing="false" text="Thema">
                             <items>
                                 <RadioMenuItem mnemonicParsing="false" text="Licht" toggleGroup="$theme" onAction="#setTheme">
@@ -135,7 +141,6 @@
                         </Menu>
                         <SeparatorMenuItem />
                         <CheckMenuItem fx:id="openWalletsInNewWindows" mnemonicParsing="false" text="Open Portefeuille In Nieuw Venster" onAction="#openWalletsInNewWindows"/>
-                        <CheckMenuItem fx:id="hideEmptyUsedAddresses" mnemonicParsing="false" text="Verberg Lege Gebruikte Adressen" onAction="#hideEmptyUsedAddresses"/>
                         <CheckMenuItem fx:id="hideAmounts" mnemonicParsing="false" text="Verberg Bedrag" accelerator="Shortcut+Shift+H" onAction="#hideAmounts"/>
                         <CheckMenuItem fx:id="showLoadingLog" mnemonicParsing="false" text="Toon Portefeuille Loading Log" onAction="#showLoadingLog" />
                         <CheckMenuItem fx:id="showTxHex" mnemonicParsing="false" text="Toon Transactie Hex" onAction="#showTxHex"/>

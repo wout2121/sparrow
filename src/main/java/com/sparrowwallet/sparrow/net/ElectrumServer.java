@@ -31,6 +31,7 @@ import javafx.util.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.SSLHandshakeException;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -1435,6 +1436,12 @@ public class ElectrumServer {
                                     bwtStartLock.unlock();
                                 }
                             }
+                        } catch(IllegalStateException e) {
+                            if(e.getCause() instanceof SSLHandshakeException) {
+                                throw new TlsServerException(Config.get().getCoreServer().getHostAndPort(), e.getCause());
+                            } else {
+                                throw e;
+                            }
                         }
                     }
 
@@ -2136,7 +2143,7 @@ public class ElectrumServer {
         }
     }
 
-    public static class WalletDiscoveryService extends Service<Optional<Wallet>> {
+    public static class WalletDiscoveryService extends Service<Optional<List<Wallet>>> {
         private final List<Wallet> wallets;
 
         public WalletDiscoveryService(List<Wallet> wallets) {
@@ -2144,17 +2151,31 @@ public class ElectrumServer {
         }
 
         @Override
-        protected Task<Optional<Wallet>> createTask() {
+        protected Task<Optional<List<Wallet>>> createTask() {
             return new Task<>() {
-                protected Optional<Wallet> call() throws ServerException {
+                protected Optional<List<Wallet>> call() throws ServerException {
                     ElectrumServer electrumServer = new ElectrumServer();
 
+                    List<Wallet> discoveredWallets = new ArrayList<>();
                     for(int i = 0; i < wallets.size(); i++) {
                         Wallet wallet = wallets.get(i);
                         updateProgress(i, wallets.size() + StandardAccount.DISCOVERY_ACCOUNTS.size());
                         Map<WalletNode, Set<BlockTransactionHash>> nodeTransactionMap = new TreeMap<>();
                         electrumServer.getReferences(wallet, wallet.getNode(KeyPurpose.RECEIVE).getChildren(), nodeTransactionMap, 0);
-                        if(nodeTransactionMap.values().stream().anyMatch(blockTransactionHashes -> !blockTransactionHashes.isEmpty())) {
+                        boolean found = nodeTransactionMap.values().stream().anyMatch(blockTransactionHashes -> !blockTransactionHashes.isEmpty());
+
+                        for(Iterator<Wallet> iterator = wallet.getChildWallets().iterator(); iterator.hasNext(); ) {
+                            Wallet childWallet = iterator.next();
+                            Map<WalletNode, Set<BlockTransactionHash>> childTransactionMap = new TreeMap<>();
+                            electrumServer.getReferences(childWallet, childWallet.getNode(KeyPurpose.RECEIVE).getChildren(), childTransactionMap, 0);
+                            if(childTransactionMap.values().stream().anyMatch(blockTransactionHashes -> !blockTransactionHashes.isEmpty())) {
+                                found = true;
+                            } else {
+                                iterator.remove();
+                            }
+                        }
+
+                        if(found) {
                             Wallet masterWalletCopy = wallet.copy();
                             List<StandardAccount> searchAccounts = getStandardAccounts(wallet);
                             Set<StandardAccount> foundAccounts = new LinkedHashSet<>();
@@ -2177,11 +2198,11 @@ public class ElectrumServer {
                                 wallet.addChildWallet(standardAccount);
                             }
 
-                            return Optional.of(wallet);
+                            discoveredWallets.add(wallet);
                         }
                     }
 
-                    return Optional.empty();
+                    return discoveredWallets.isEmpty() ? Optional.empty() : Optional.of(discoveredWallets);
                 }
             };
         }

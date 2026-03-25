@@ -91,7 +91,9 @@ public class AppController implements Initializable {
     public static final String LOADING_TRANSACTIONS_MESSAGE = "Laad Portefeuille, selecteer Portefeuille tab om te bekijken...";
     public static final String CONNECTION_FAILED_PREFIX = "Verbinding faalt: ";
     public static final String TRYING_ANOTHER_SERVER_MESSAGE = "Probeer een andere server...";
-    public static final String JPACKAGE_APP_PATH = "jpackage.app-path";
+
+    @FXML
+    private VBox rootBox;
 
 
 
@@ -191,15 +193,18 @@ private void changeAppTitle() {
     private ToggleGroup unitFormat;
 
     @FXML
+    private CheckMenuItem chunkAddresses;
+
+    @FXML
+    private CheckMenuItem hideEmptyUsedAddresses;
+    private static final BooleanProperty hideEmptyUsedAddressesProperty = new SimpleBooleanProperty();
+
+    @FXML
     private ToggleGroup theme;
 
     @FXML
     private CheckMenuItem openWalletsInNewWindows;
     private static final BooleanProperty openWalletsInNewWindowsProperty = new SimpleBooleanProperty();
-
-    @FXML
-    private CheckMenuItem hideEmptyUsedAddresses;
-    private static final BooleanProperty hideEmptyUsedAddressesProperty = new SimpleBooleanProperty();
 
     @FXML
     private CheckMenuItem hideAmounts;
@@ -425,6 +430,13 @@ private void changeAppTitle() {
         Optional<Toggle> selectedFormatToggle = unitFormat.getToggles().stream().filter(toggle -> selectedFormat.equals(toggle.getUserData())).findFirst();
         selectedFormatToggle.ifPresent(toggle -> unitFormat.selectToggle(toggle));
 
+        chunkAddresses.setSelected(Config.get().isChunkAddresses());
+        if(Config.get().isChunkAddresses()) {
+            rootBox.getStyleClass().add("chunk-addresses");
+        }
+        hideEmptyUsedAddressesProperty.set(Config.get().isHideEmptyUsedAddresses());
+        hideEmptyUsedAddresses.selectedProperty().bindBidirectional(hideEmptyUsedAddressesProperty);
+
         Theme configTheme = Config.get().getTheme();
         if(configTheme == null) {
             configTheme = Theme.LIGHT;
@@ -437,8 +449,6 @@ private void changeAppTitle() {
 
         openWalletsInNewWindowsProperty.set(Config.get().isOpenWalletsInNewWindows());
         openWalletsInNewWindows.selectedProperty().bindBidirectional(openWalletsInNewWindowsProperty);
-        hideEmptyUsedAddressesProperty.set(Config.get().isHideEmptyUsedAddresses());
-        hideEmptyUsedAddresses.selectedProperty().bindBidirectional(hideEmptyUsedAddressesProperty);
         hideAmounts.setSelected(Config.get().isHideAmounts());
         useHdCameraResolutionProperty.set(Config.get().getWebcamResolution() == null || Config.get().getWebcamResolution().isWidescreenAspect());
         useHdCameraResolution.selectedProperty().bindBidirectional(useHdCameraResolutionProperty);
@@ -461,7 +471,7 @@ private void changeAppTitle() {
             networkItem.setOnAction(event -> restart(event, network));
             restart.getItems().add(networkItem);
         }
-        restart.setVisible(System.getProperty(JPACKAGE_APP_PATH) != null);
+        restart.setVisible(System.getProperty(SparrowWallet.JPACKAGE_APP_PATH) != null);
 
         saveTransaction.setDisable(true);
         showTransaction.visibleProperty().bind(Bindings.and(saveTransaction.visibleProperty(), saveTransaction.disableProperty().not()));
@@ -638,7 +648,7 @@ private void changeAppTitle() {
                 sudo groupadd -f -r plugdev
                 sudo usermod -aG plugdev `whoami`
                 """;
-        String home = System.getProperty(JPACKAGE_APP_PATH);
+        String home = System.getProperty(SparrowWallet.JPACKAGE_APP_PATH);
         if(home != null && !home.startsWith("/opt/sparrowwallet") && home.endsWith("bin/Sparrow")) {
             home = home.replace("bin/Sparrow", "");
             commands = commands.replace("/opt/sparrowwallet/", home);
@@ -823,7 +833,8 @@ private void changeAppTitle() {
                 byte[] txBytes = transaction.bitcoinSerialize();
                 UR ur = UR.fromBytes(txBytes);
                 BBQR bbqr = new BBQR(BBQRType.TXN, txBytes);
-                QRDisplayDialog qrDisplayDialog = new QRDisplayDialog(ur, bbqr, false, false, false);
+                String raw = Utils.bytesToHex(txBytes);
+                QRDisplayDialog qrDisplayDialog = new QRDisplayDialog(ur, bbqr, raw, false, false, QREncoding.UR);
                 qrDisplayDialog.initOwner(rootStack.getScene().getWindow());
                 qrDisplayDialog.showAndWait();
             } catch(Exception e) {
@@ -925,7 +936,7 @@ private void changeAppTitle() {
             byte[] psbtBytes = transactionTabData.getPsbt().getForExport().serialize();
             CryptoPSBT cryptoPSBT = new CryptoPSBT(psbtBytes);
             BBQR bbqr = new BBQR(BBQRType.PSBT, psbtBytes);
-            QRDisplayDialog qrDisplayDialog = new QRDisplayDialog(cryptoPSBT.toUR(), bbqr, false, true, false);
+            QRDisplayDialog qrDisplayDialog = new QRDisplayDialog(cryptoPSBT.toUR(), bbqr, false, true, QREncoding.UR);
             qrDisplayDialog.initOwner(rootStack.getScene().getWindow());
             qrDisplayDialog.show();
         }
@@ -995,6 +1006,16 @@ private void changeAppTitle() {
         CheckMenuItem item = (CheckMenuItem)event.getSource();
         Config.get().setOpenWalletsInNewWindows(item.isSelected());
         EventManager.get().post(new OpenWalletsNewWindowsStatusEvent(item.isSelected()));
+    }
+
+    public void chunkAddresses(ActionEvent event) {
+        CheckMenuItem item = (CheckMenuItem)event.getSource();
+        Config.get().setChunkAddresses(item.isSelected());
+        if(item.isSelected() && !rootBox.getStyleClass().contains("chunk-addresses")) {
+            rootBox.getStyleClass().add("chunk-addresses");
+        } else {
+            rootBox.getStyleClass().remove("chunk-addresses");
+        }
     }
 
     public void hideEmptyUsedAddresses(ActionEvent event) {
@@ -1075,8 +1096,8 @@ private void changeAppTitle() {
     }
 
     public void restart(ActionEvent event, Network network) {
-        if(System.getProperty(JPACKAGE_APP_PATH) == null) {
-            throw new IllegalStateException("Property " + JPACKAGE_APP_PATH + " is not present");
+        if(System.getProperty(SparrowWallet.JPACKAGE_APP_PATH) == null) {
+            throw new IllegalStateException("Property " + SparrowWallet.JPACKAGE_APP_PATH + " is not present");
         }
 
         Args args = getRestartArgs();
@@ -1097,7 +1118,7 @@ private void changeAppTitle() {
     private void restart(ActionEvent event, Args args) {
         try {
             List<String> cmd = new ArrayList<>();
-            cmd.add(System.getProperty(JPACKAGE_APP_PATH));
+            cmd.add(System.getProperty(SparrowWallet.JPACKAGE_APP_PATH));
             cmd.addAll(args.toParams());
             final ProcessBuilder builder = new ProcessBuilder(cmd);
             if(OsType.getCurrent() == OsType.UNIX) {
@@ -1170,8 +1191,33 @@ private void changeAppTitle() {
         AppServices.moveToActiveWindowScreen(window, 800, 450);
         List<File> files = fileChooser.showOpenMultipleDialog(window);
         if(files != null) {
+            configureWalletsDir(files);
             for(File file : files) {
                 openWalletFile(file, forceSameWindow);
+            }
+        }
+    }
+
+    private static void configureWalletsDir(List<File> files) {
+        List<File> parentDirs = files.stream().map(File::getParentFile).distinct().collect(Collectors.toList());
+        if(parentDirs.size() == 1 && !Boolean.FALSE.equals(Config.get().getSuggestChangeWalletsDir())) {
+            File selectedDir = parentDirs.getFirst();
+            boolean sameDir;
+            try {
+                sameDir = Files.isSameFile(selectedDir.toPath(), Storage.getWalletsDir().toPath());
+            } catch(IOException e) {
+                sameDir = selectedDir.toPath().normalize().equals(Storage.getWalletsDir().toPath().normalize());
+            }
+            if(!sameDir) {
+                ConfirmationAlert alert = new ConfirmationAlert("Change wallets directory?",
+                    "Do you want to configure Sparrow to use " + selectedDir + " as the default wallets directory?", ButtonType.NO, ButtonType.YES);
+                Optional<ButtonType> optType = alert.showAndWait();
+                if(optType.isPresent() && optType.get() == ButtonType.YES) {
+                    Config.get().setWalletsDir(selectedDir);
+                    Config.get().setSuggestChangeWalletsDir(null);
+                } else if(alert.isDontAskAgain()) {
+                    Config.get().setSuggestChangeWalletsDir(Boolean.FALSE);
+                }
             }
         }
     }
@@ -1268,28 +1314,31 @@ private void changeAppTitle() {
         List<WalletForm> selectedWalletForms = getSelectedWalletForms();
         WalletImportDialog dlg = new WalletImportDialog(selectedWalletForms);
         dlg.initOwner(rootStack.getScene().getWindow());
-        Optional<Wallet> optionalWallet = dlg.showAndWait();
-        if(optionalWallet.isPresent()) {
-            Wallet wallet = optionalWallet.get();
+        Optional<List<Wallet>> optionalWallets = dlg.showAndWait();
+        if(optionalWallets.isPresent()) {
+            List<Wallet> wallets = optionalWallets.get();
 
-            List<WalletTabData> walletTabData = getOpenWalletTabData();
-            List<ExtendedKey> xpubs = wallet.getKeystores().stream().map(Keystore::getExtendedPublicKey).collect(Collectors.toList());
-            Optional<WalletForm> optNewWalletForm = walletTabData.stream()
-                    .map(WalletTabData::getWalletForm)
-                    .filter(wf -> wf.getSettingsWalletForm() != null && wf.getSettingsWalletForm().getWallet().getPolicyType() == PolicyType.MULTI &&
-                            wf.getSettingsWalletForm().getWallet().getScriptType() == wallet.getScriptType() && !wf.getSettingsWalletForm().getWallet().isValid() &&
-                            wf.getSettingsWalletForm().getWallet().getKeystores().stream().map(Keystore::getExtendedPublicKey).anyMatch(xpubs::contains)).findFirst();
-            if(optNewWalletForm.isPresent()) {
-                EventManager.get().post(new ExistingWalletImportedEvent(optNewWalletForm.get().getWalletId(), wallet));
-                selectTab(optNewWalletForm.get().getWallet());
-            } else if(selectedWalletForms.isEmpty() || wallet != selectedWalletForms.get(0).getWallet()) {
-                addImportedWallet(wallet);
+            for(Wallet wallet : wallets) {
+                List<WalletTabData> walletTabData = getOpenWalletTabData();
+                List<ExtendedKey> xpubs = wallet.getKeystores().stream().map(Keystore::getExtendedPublicKey).collect(Collectors.toList());
+                Optional<WalletForm> optNewWalletForm = walletTabData.stream()
+                        .map(WalletTabData::getWalletForm)
+                        .filter(wf -> wf.getSettingsWalletForm() != null && wf.getSettingsWalletForm().getWallet().getPolicyType() == PolicyType.MULTI &&
+                                wf.getSettingsWalletForm().getWallet().getScriptType() == wallet.getScriptType() && !wf.getSettingsWalletForm().getWallet().isValid() &&
+                                wf.getSettingsWalletForm().getWallet().getKeystores().stream().map(Keystore::getExtendedPublicKey).anyMatch(xpubs::contains)).findFirst();
+                if(optNewWalletForm.isPresent()) {
+                    EventManager.get().post(new ExistingWalletImportedEvent(optNewWalletForm.get().getWalletId(), wallet));
+                    selectTab(optNewWalletForm.get().getWallet());
+                } else if(selectedWalletForms.isEmpty() || wallet != selectedWalletForms.get(0).getWallet()) {
+                    addImportedWallet(wallet);
+                }
             }
         }
     }
 
     private boolean attemptImportWallet(File file, SecureString password) {
         List<WalletImport> walletImporters = List.of(new ColdcardSinglesig(), new ColdcardMultisig(),
+                new Bip129(),
                 new Electrum(),
                 new SpecterDesktop(),
                 new Descriptor(),
