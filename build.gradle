@@ -306,6 +306,10 @@ jlink {
             }
             installerOptions.addAll(['--resource-dir', layout.buildDirectory.dir('deploy/package').get().asFile.toString(), '--linux-app-category', 'utils', '--linux-app-release', '1', '--linux-rpm-license-type', 'ASL 2.0', '--linux-deb-maintainer', 'mail@sparrowwallet.com'])
             imageOptions.addAll(['--icon', 'src/main/deploy/package/linux/Sparrow.png', '--resource-dir', 'src/main/deploy/package/linux/'])
+            // Optional: -PlinuxInstallerType=deb|rpm (default: jpackage picks based on the host)
+            if(findProperty("linuxInstallerType")) {
+                installerType = findProperty("linuxInstallerType")
+            }
         }
         if(os.macOsX) {
             installerOptions.addAll(['--mac-sign', '--mac-signing-key-user-name', 'Craig Raw (UPLVMSK9D7)'])
