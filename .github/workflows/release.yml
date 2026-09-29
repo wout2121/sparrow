@@ -1,0 +1,164 @@
+name: Release (Linux, Windows, macOS)
+
+# Bouwt Sparrow voor alle platformen en hangt de bestanden aan de GitHub-release.
+#
+# Gebruik:
+#   1. Maak op GitHub een nieuwe release (Releases > Draft a new release), kies/maak een tag
+#      (bv. v2.5.6) en klik "Publish release". Deze workflow start dan automatisch.
+#   2. Of start hem handmatig (Actions > Release > Run workflow): kies de branch om te bouwen en
+#      geef de tag van een bestaande release (ook een draft) op om de bestanden aan toe te voegen.
+#
+# Resultaat per release:
+#   Linux x86_64 + aarch64: .deb, .rpm, .AppImage, .tar.gz (+ headless server .deb/.rpm/.tar.gz)
+#   Windows x64:            .msi installer + .zip (portable)
+#   macOS arm64 + x86_64:   .dmg (niet ondertekend/genotariseerd)
+#   SHA256SUMS-<platform>.txt per build
+
+on:
+  release:
+    types: [ published ]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag van een bestaande release/draft (bv. v2.5.6)'
+        required: true
+
+permissions:
+  contents: write
+
+env:
+  JDK_JAVAC_OPTIONS: '-Xlint:-module'
+  TAG: ${{ github.event.release.tag_name || inputs.tag }}
+  GH_TOKEN: ${{ github.token }}
+
+jobs:
+  linux:
+    name: Linux ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            runner: ubuntu-22.04
+          - arch: aarch64
+            runner: ubuntu-22.04-arm
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - uses: actions/setup-java@v5
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+      - uses: gradle/actions/setup-gradle@v5
+      - name: Install packaging tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rpm fakeroot zstd xz-utils binutils file libfuse2
+      - run: chmod +x gradlew repackage.sh scripts/build-appimage.sh
+
+      # jpackage wist build/jpackage bij elke run, dus na elke stap meteen kopiëren naar dist/
+      - name: Desktop .deb
+        run: |
+          mkdir -p dist
+          ./gradlew jpackage -PlinuxInstallerType=deb
+          ./repackage.sh
+          cp build/jpackage/*.deb dist/
+      - name: Desktop .rpm
+        run: |
+          ./gradlew jpackage -PlinuxInstallerType=rpm
+          cp build/jpackage/*.rpm dist/
+      - name: Desktop .tar.gz
+        run: |
+          ./gradlew packageTarDistribution
+          cp build/jpackage/*.tar.gz dist/
+      - name: Desktop .AppImage
+        run: |
+          ./scripts/build-appimage.sh
+          cp build/jpackage/*.AppImage dist/
+      - name: Headless .deb
+        run: |
+          ./gradlew -Djava.awt.headless=true clean jpackage -PlinuxInstallerType=deb
+          ./repackage.sh
+          cp build/jpackage/*.deb dist/
+      - name: Headless .rpm
+        run: |
+          ./gradlew -Djava.awt.headless=true jpackage -PlinuxInstallerType=rpm
+          cp build/jpackage/*.rpm dist/
+      - name: Headless .tar.gz
+        run: |
+          ./gradlew -Djava.awt.headless=true packageTarDistribution
+          cp build/jpackage/*.tar.gz dist/
+
+      - name: Checksums
+        run: cd dist && sha256sum * > SHA256SUMS-linux-${{ matrix.arch }}.txt && cat SHA256SUMS-linux-${{ matrix.arch }}.txt
+      - name: Upload to release
+        run: gh release upload "$TAG" dist/* --clobber --repo "$GITHUB_REPOSITORY"
+
+  windows:
+    name: Windows x64
+    runs-on: windows-2022   # heeft WiX 3 voorgeïnstalleerd
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - uses: actions/setup-java@v5
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+      - uses: gradle/actions/setup-gradle@v5
+      - name: Check WiX
+        shell: pwsh
+        run: |
+          $wix = Get-Command candle.exe -ErrorAction SilentlyContinue
+          if (-not $wix) {
+            $dir = Get-ChildItem "${env:ProgramFiles(x86)}" -Directory -Filter "WiX Toolset*" | Select-Object -First 1
+            if ($dir) { "$($dir.FullName)\bin" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH }
+            else { Write-Error "WiX 3 niet gevonden op de runner"; exit 1 }
+          }
+      - name: Build .msi
+        run: ./gradlew jpackage
+      - name: Build portable .zip
+        run: ./gradlew packageZipDistribution
+      - name: Collect
+        run: |
+          mkdir -p dist
+          cp build/jpackage/*.msi dist/
+          for f in build/jpackage/*.zip; do cp "$f" "dist/$(basename "${f%.zip}")-windows-x64.zip"; done
+          cd dist && sha256sum * > SHA256SUMS-windows-x64.txt && cat SHA256SUMS-windows-x64.txt
+      - name: Upload to release
+        run: gh release upload "$TAG" dist/* --clobber --repo "$GITHUB_REPOSITORY"
+
+  macos:
+    name: macOS ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: arm64
+            runner: macos-14
+          - arch: x86_64
+            runner: macos-15-intel
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - uses: actions/setup-java@v5
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+      - uses: gradle/actions/setup-gradle@v5
+      - name: Build .dmg
+        run: ./gradlew jpackage
+      - name: Collect
+        run: |
+          mkdir -p dist
+          for f in build/jpackage/*.dmg; do cp "$f" "dist/$(basename "${f%.dmg}")-${{ matrix.arch }}.dmg"; done
+          cd dist && shasum -a 256 * > SHA256SUMS-macos-${{ matrix.arch }}.txt && cat SHA256SUMS-macos-${{ matrix.arch }}.txt
+      - name: Upload to release
+        run: gh release upload "$TAG" dist/* --clobber --repo "$GITHUB_REPOSITORY"
