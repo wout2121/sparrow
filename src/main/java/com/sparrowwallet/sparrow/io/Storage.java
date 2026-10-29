@@ -49,7 +49,7 @@ public class Storage {
 
     private Persistence persistence;
     private File walletFile;
-    private ECKey encryptionPubKey;
+    private volatile ECKey encryptionPubKey;    //set where the wallet is saved, and read by the queued updates that follow on another thread
 
     public Storage(File walletFile) {
         this(!walletFile.exists() || walletFile.getName().endsWith("." + PersistenceType.DB.getExtension()) ? PersistenceType.DB : PersistenceType.JSON, walletFile);
@@ -229,8 +229,18 @@ public class Storage {
         }
     }
 
+    public boolean isInWalletsDir() {
+        //Resolve the folder rather than the file, so that a wallet file symlinked into the wallets folder is treated as being in it
+        Path walletDir = walletFile.getAbsoluteFile().getParentFile().toPath();
+        try {
+            return walletDir.toRealPath().startsWith(getWalletsDir().toPath().toRealPath());
+        } catch(IOException e) {
+            return walletDir.normalize().startsWith(getWalletsDir().toPath().toAbsolutePath().normalize());
+        }
+    }
+
     public void backupWallet() throws IOException {
-        if(walletFile.toPath().startsWith(getWalletsDir().toPath())) {
+        if(isInWalletsDir()) {
             backupWallet(null);
         }
     }
@@ -269,7 +279,10 @@ public class Storage {
     }
 
     public void deleteBackups() {
-        deleteBackups(null);
+        //Backups are only written for wallets in the wallets folder, so any backups matching the name of a wallet elsewhere belong to another wallet
+        if(isInWalletsDir()) {
+            deleteBackups(null);
+        }
     }
 
     private void deleteBackups(String prefix) {

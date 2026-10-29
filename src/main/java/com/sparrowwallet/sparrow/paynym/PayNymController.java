@@ -80,6 +80,21 @@ public class PayNymController {
     @FXML
     private ListView<PayNym> followersList;
 
+    @FXML
+    private Label payNymNameLabel;
+
+    @FXML
+    private Label paymentCodeLabel;
+
+    @FXML
+    private Label searchPayNymsLabel;
+
+    @FXML
+    private Label followingLabel;
+
+    @FXML
+    private Label followersLabel;
+
     private final ObjectProperty<PayNym> payNymProperty = new SimpleObjectProperty<>(null);
 
     private final StringProperty findNymProperty = new SimpleStringProperty();
@@ -90,6 +105,13 @@ public class PayNymController {
 
     public void initializeView(String walletId) {
         this.walletId = walletId;
+
+        //The labels sit beside their controls rather than in form fields, so they are linked here to name the controls for screen readers
+        payNymNameLabel.setLabelFor(payNymName);
+        paymentCodeLabel.setLabelFor(paymentCode);
+        searchPayNymsLabel.setLabelFor(searchPayNyms);
+        followingLabel.setLabelFor(followingList);
+        followersLabel.setLabelFor(followersList);
 
         payNymName.managedProperty().bind(payNymName.visibleProperty());
         payNymRetrieve.managedProperty().bind(payNymRetrieve.visibleProperty());
@@ -142,7 +164,10 @@ public class PayNymController {
         searchPayNyms.setTextFormatter(new TextFormatter<>(paymentCodeFilter));
         searchPayNyms.addEventFilter(KeyEvent.ANY, event -> {
             if(event.getCode() == KeyCode.ENTER) {
-                findNymProperty.set(searchPayNyms.getText());
+                //An abbreviated payment code is only the display of the one already being searched for
+                if(!searchPayNyms.getText().contains("...")) {
+                    findNymProperty.set(searchPayNyms.getText());
+                }
                 event.consume();
             }
         });
@@ -231,10 +256,12 @@ public class PayNymController {
 
             PayNymService.getPayNym(nymIdentifier, true).subscribe(searchedPayNym -> {
                 findPayNym.setVisible(false);
-                List<PayNym> searchList = new ArrayList<>();
-                searchList.add(searchedPayNym);
-                followingList.setUserData(Boolean.TRUE);
-                followingList.setItems(FXCollections.observableList(searchList));
+                if(nymIdentifier.equals(findNymProperty.get())) {
+                    List<PayNym> searchList = new ArrayList<>();
+                    searchList.add(searchedPayNym);
+                    followingList.setUserData(Boolean.TRUE);
+                    followingList.setItems(FXCollections.observableList(searchList));
+                }
             }, error -> {
                 findPayNym.setVisible(false);
             });
@@ -596,7 +623,7 @@ public class PayNymController {
                 log.error("Error broadcasting notification transaction", failedEvent.getSource().getException());
                 retrievePayNymProgress.setVisible(false);
                 followingList.refresh();
-                AppServices.showErrorDialog("Error broadcasting notification transaction", failedEvent.getSource().getException().getMessage());
+                AppServices.showErrorDialog("Fout bij uitzenden van notificatietransactie", "De server gaf een fout bij het uitzenden van de notificatietransactie. Het antwoord van de server staat in het logbestand (zie Help > Toon Log Bestand).");
             });
             retrievePayNymProgress.setVisible(true);
             notificationTransactions.put(transaction.getTxId(), payNym);

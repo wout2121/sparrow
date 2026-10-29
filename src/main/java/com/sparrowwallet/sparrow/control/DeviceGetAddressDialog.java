@@ -11,6 +11,7 @@ import java.util.List;
 public class DeviceGetAddressDialog extends DeviceDialog<Address> {
     public DeviceGetAddressDialog(List<String> operationFingerprints) {
         super(operationFingerprints);
+        setTitle("Haal adres op");
         EventManager.get().register(this);
         setOnCloseRequest(event -> {
             EventManager.get().unregister(this);

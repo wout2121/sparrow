@@ -65,7 +65,7 @@
                             <ToggleGroup fx:id="feeSelectionToggleGroup" />
                         </toggleGroup>
                         <buttons>
-                            <ToggleButton fx:id="targetBlocksToggle" text="Kies Blokken" 
+                            <ToggleButton accessibleRole="RADIO_BUTTON" fx:id="targetBlocksToggle" text="Kies Blokken" 
                             minWidth="140" 
 toggleGroup="$feeSelectionToggleGroup">
                                 <tooltip>
@@ -75,7 +75,7 @@ toggleGroup="$feeSelectionToggleGroup">
                                     <FeeRatesSelection fx:constant="BLOCK_TARGET"/>
                                 </userData>
                             </ToggleButton>
-                            <ToggleButton fx:id="mempoolSizeToggle" text="Mempool Grootte"                                                      minWidth="140" 
+                            <ToggleButton accessibleRole="RADIO_BUTTON" fx:id="mempoolSizeToggle" text="Mempool Grootte"                                                      minWidth="140" 
 toggleGroup="$feeSelectionToggleGroup">
                                 <tooltip>
                                     <Tooltip text="Bepaal de kost op basis van huidige mempool grootte"/>
@@ -84,7 +84,7 @@ toggleGroup="$feeSelectionToggleGroup">
                                     <FeeRatesSelection fx:constant="MEMPOOL_SIZE"/>
                                 </userData>
                             </ToggleButton>
-                            <ToggleButton fx:id="recentBlocksToggle" text="Recente Blokken"
+                            <ToggleButton accessibleRole="RADIO_BUTTON" fx:id="recentBlocksToggle" text="Recente Blokken"
                             minWidth="140"
 toggleGroup="$feeSelectionToggleGroup">
                                 <tooltip>
@@ -100,7 +100,7 @@ toggleGroup="$feeSelectionToggleGroup">
              <Form GridPane.columnIndex="0" GridPane.rowIndex="2">
     <Fieldset inputGrow="SOMETIMES">
         <Field fx:id="targetBlocksField" text="Blokken:">
-            <Slider fx:id="targetBlocks" snapToTicks="true" showTickLabels="true" showTickMarks="true" />
+            <Slider fx:id="targetBlocks" accessibleText="Doelblokken" snapToTicks="true" showTickLabels="true" showTickMarks="true" />
         </Field>
         <Field fx:id="feeRangeField" text="Bereik:">
             <FeeRangeSlider fx:id="feeRange" />
@@ -135,7 +135,7 @@ toggleGroup="$feeSelectionToggleGroup">
                         </FXCollections>
                     </items>
                 </ComboBox>
-                <Label style="-fx-pref-width: 15" />
+                <Region style="-fx-pref-width: 15" />
                 <FiatLabel fx:id="fiatFeeAmount" />
             </HBox>
         </Field>
@@ -179,7 +179,7 @@ toggleGroup="$feeSelectionToggleGroup">
                         <ToggleGroup fx:id="optimizationToggleGroup" />
                     </toggleGroup>
                     <buttons>
-                        <ToggleButton fx:id="efficiencyToggle" text="Efficiëntie" toggleGroup="$optimizationToggleGroup">
+                        <ToggleButton accessibleRole="RADIO_BUTTON" fx:id="efficiencyToggle" text="Efficiëntie" toggleGroup="$optimizationToggleGroup">
                             <tooltip>
                                 <Tooltip text="Kleinste transactie grootte voor de laagste transactiekosten"/>
                             </tooltip>
@@ -187,7 +187,7 @@ toggleGroup="$feeSelectionToggleGroup">
                                 <OptimizationStrategy fx:constant="EFFICIENCY"/>
                             </userData>
                         </ToggleButton>
-                        <ToggleButton fx:id="privacyToggle" text="Privacy" toggleGroup="$optimizationToggleGroup">
+                        <ToggleButton accessibleRole="RADIO_BUTTON" fx:id="privacyToggle" text="Privacy" toggleGroup="$optimizationToggleGroup">
                             <tooltip>
                                 <Tooltip text="Higher entropy transactions that reduce probabilities in blockchain analysis"/>
                             </tooltip>

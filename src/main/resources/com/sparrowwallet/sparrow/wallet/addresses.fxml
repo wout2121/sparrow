@@ -25,7 +25,7 @@
         <top>
             <HBox alignment="CENTER_LEFT">
                 <Label styleClass="addresses-treetable-label" text="Ontvangstadres"/>
-                <Button onAction="#exportReceiveAddresses" styleClass="icon-button">
+                <Button accessibleText="Exporteer ontvangstadressen" onAction="#exportReceiveAddresses" styleClass="icon-button">
                     <graphic>
                         <Glyph fontFamily="Font Awesome 5 Free Solid" icon="ARROW_CIRCLE_DOWN" fontSize="12" />
                     </graphic>
@@ -52,7 +52,7 @@
         <top>
             <HBox alignment="CENTER_LEFT">
                 <Label styleClass="addresses-treetable-label" text="Wisselgeld adressen"/>
-                <Button onAction="#exportChangeAddresses" styleClass="icon-button">
+                <Button accessibleText="Exporteer wisselgeldadressen" onAction="#exportChangeAddresses" styleClass="icon-button">
                     <graphic>
                         <Glyph fontFamily="Font Awesome 5 Free Solid" icon="ARROW_CIRCLE_DOWN" fontSize="12" />
                     </graphic>
