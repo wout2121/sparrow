@@ -24,6 +24,7 @@ import java.util.List;
 public class WalletImportDialog extends Dialog<List<Wallet>> {
     private List<Wallet> wallets;
     private final Accordion importAccordion;
+    private final ScrollPane scrollPane;
     private final Button scanButton;
 
     public WalletImportDialog(List<WalletForm> selectedWalletForms) {
@@ -35,6 +36,7 @@ public class WalletImportDialog extends Dialog<List<Wallet>> {
         final DialogPane dialogPane = getDialogPane();
         dialogPane.getStylesheets().add(AppServices.class.getResource("general.css").toExternalForm());
         AppServices.setStageIcon(dialogPane.getScene().getWindow());
+        setTitle("Importeer portefeuille");
 
         StackPane stackPane = new StackPane();
         dialogPane.setContent(stackPane);
@@ -42,7 +44,7 @@ public class WalletImportDialog extends Dialog<List<Wallet>> {
         AnchorPane anchorPane = new AnchorPane();
         stackPane.getChildren().add(anchorPane);
 
-        ScrollPane scrollPane = new ScrollPane();
+        scrollPane = new ScrollPane();
         scrollPane.setPrefHeight(520);
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         anchorPane.getChildren().add(scrollPane);
@@ -116,12 +118,22 @@ public class WalletImportDialog extends Dialog<List<Wallet>> {
                 importAccordion.getPanes().add(0, devicePane);
             }
             Platform.runLater(() -> EventManager.get().post(new UsbDeviceEvent(devices)));
+
+            if(devices.isEmpty()) {
+                AppServices.showWarningDialog("Geen hardware portefeuilles gevonden", "Controleer of het apparaat verbonden en ontgrendeld is en scan opnieuw.");
+            } else {
+                Platform.runLater(() -> {
+                    scrollPane.setVvalue(scrollPane.getVmin());
+                    importAccordion.getPanes().getFirst().requestFocus();
+                });
+            }
         });
         enumerateService.setOnFailed(workerStateEvent -> {
             Glyph glyph = new Glyph(FontAwesome5.FONT_NAME, FontAwesome5.Glyph.EXCLAMATION_CIRCLE);
             glyph.getStyleClass().add("failure");
             scanButton.setGraphic(glyph);
             scanButton.setTooltip(new Tooltip(workerStateEvent.getSource().getException().getMessage()));
+            AppServices.showErrorDialog("Kon niet naar hardware portefeuilles zoeken", workerStateEvent.getSource().getException().getMessage());
         });
         enumerateService.start();
     }

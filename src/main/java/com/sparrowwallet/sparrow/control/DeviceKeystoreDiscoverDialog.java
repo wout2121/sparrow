@@ -18,6 +18,7 @@ public class DeviceKeystoreDiscoverDialog extends DeviceDialog<Map<StandardAccou
 
     public DeviceKeystoreDiscoverDialog(List<String> operationFingerprints, Wallet masterWallet, List<StandardAccount> availableAccounts) {
         super(operationFingerprints);
+        setTitle("Accounts ontdekken");
         this.masterWallet = masterWallet;
         this.availableAccounts = availableAccounts;
         EventManager.get().register(this);

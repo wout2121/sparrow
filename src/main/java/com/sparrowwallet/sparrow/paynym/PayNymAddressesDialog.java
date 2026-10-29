@@ -15,6 +15,7 @@ public class PayNymAddressesDialog extends Dialog<Boolean> {
     public PayNymAddressesDialog(WalletForm walletForm) {
         final DialogPane dialogPane = getDialogPane();
         AppServices.setStageIcon(dialogPane.getScene().getWindow());
+        setTitle("PayNym-adressen");
         AppServices.onEscapePressed(dialogPane.getScene(), this::close);
 
         try {
