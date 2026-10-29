@@ -51,7 +51,7 @@
 
             <AnchorPane fx:id="qrCodePane" GridPane.columnIndex="1" GridPane.rowIndex="0">
                 <VBox spacing="5" alignment="CENTER" AnchorPane.rightAnchor="5" AnchorPane.topAnchor="0">
-                    <ImageView fx:id="qrCode" styleClass="qr-code"/>
+                    <ImageView fx:id="qrCode" accessibleText="QR-code van adres" styleClass="qr-code"/>
                     <Label text="Klik op QR code om te vergroten" wrapText="true" maxWidth="140" textAlignment="CENTER"/>
                 </VBox>
             </AnchorPane>
@@ -107,7 +107,7 @@
             <Form fx:id="spQrForm" GridPane.columnIndex="0" GridPane.rowIndex="2" alignment="CENTER">
                 <Fieldset inputGrow="SOMETIMES" text="">
                     <Field text="">
-                        <ImageView fx:id="spQrCode" styleClass="qr-code" />
+                        <ImageView fx:id="spQrCode" accessibleText="QR-code van Silent Payments-adres" styleClass="qr-code" />
                     </Field>
                 </Fieldset>
             </Form>
