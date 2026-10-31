@@ -36,8 +36,11 @@ public class TorStatusLabel extends Label {
     public void update() {
         if(!Config.get().isUseProxy()) {
             torConnectionTest.cancel();
+            getStyleClass().remove("failure");
             if(AppServices.isTorRunning()) {
                 setTooltip(new Tooltip("Internal Tor proxy enabled"));
+            } else {
+                setTooltip(new Tooltip("Tor is not in use: connecting directly (the server can see your IP address)"));
             }
         } else if(!torConnectionTest.isRunning()) {
             if(torConnectionTest.getState() == Worker.State.CANCELLED || torConnectionTest.getState() == Worker.State.FAILED) {
