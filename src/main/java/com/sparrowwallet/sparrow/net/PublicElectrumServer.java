@@ -17,6 +17,7 @@ public enum PublicElectrumServer {
     BITAROO_NET("electrum.bitaroo.net", "ssl://electrum.bitaroo.net:50002", Network.MAINNET),
     DIYNODES_COM("electrum.diynodes.com", "ssl://electrum.diynodes.com:50022", Network.MAINNET),
     SETHFORPRIVACY_COM("fulcrum.sethforprivacy.com", "ssl://fulcrum.sethforprivacy.com:50002", Network.MAINNET),
+    BITCOINSERVER_NL_ONION("bitcoinserver.nl (Tor)", "ssl://iuo6acfdicxhrovyqrekefh4rg2b7vgmzeeohc5cbwegawwhqpdxkgad.onion:50002", Network.MAINNET),
     TESTNET_ARANGUREN_ORG("testnet.aranguren.org", "ssl://testnet.aranguren.org:51002", Network.TESTNET),
     TESTNET_QTORNADO_COM("testnet.qtornado.com", "ssl://testnet.qtornado.com:51002", Network.TESTNET),
     SIGNET_MEMPOOL_SPACE("mempool.space", "ssl://mempool.space:60602", Network.SIGNET),
@@ -52,6 +53,10 @@ public enum PublicElectrumServer {
         return network;
     }
 
+    public boolean isOnion() {
+        return server.getHost() != null && server.getHost().endsWith(".onion");
+    }
+
     public boolean isSupportedPolicyType(PolicyType policyType) {
         return supportedPolicyTypes.contains(policyType);
     }
@@ -62,6 +67,10 @@ public enum PublicElectrumServer {
 
     public static List<PublicElectrumServer> getServers() {
         return Arrays.stream(values()).filter(server -> server.network == Network.get()).collect(Collectors.toList());
+    }
+
+    public static List<PublicElectrumServer> getDefaultServers() {
+        return getServers().stream().filter(server -> !server.isOnion()).collect(Collectors.toList());
     }
 
     public static boolean supportedNetwork() {
