@@ -11,6 +11,7 @@
 <?import tornadofx.control.Fieldset?>
 <?import tornadofx.control.Field?>
 <?import com.sparrowwallet.sparrow.control.UnlabeledToggleSwitch?>
+<?import com.sparrowwallet.sparrow.control.PublicServerTorSwitch?>
 <?import org.controlsfx.glyphfont.Glyph?>
 <?import org.controlsfx.control.SegmentedButton?>
 <?import com.sparrowwallet.sparrow.net.ServerType?>
@@ -86,6 +87,9 @@
             </Field>
             <Field text="URL:">
                 <ComboBox fx:id="publicElectrumServer" />
+            </Field>
+            <Field text="Gebruik Tor:">
+                <PublicServerTorSwitch/><HelpLabel helpText="On by default: public servers are reached through Sparrow's built-in Tor, so the server cannot see your IP address. Turn off to connect directly (the server can then see your IP address). Does not apply to .onion servers, which always need Tor. Takes effect on the next connection." />
             </Field>
             <Field text="Gebruik externe proxy:">
                 <UnlabeledToggleSwitch fx:id="publicUseProxy"/><HelpLabel helpText="By default, public servers are reached through Sparrow's built-in Tor, so the server cannot see your IP address and you do not need to install anything. Enable this to use your own external proxy instead (for example Tor on 127.0.0.1:9050)." />

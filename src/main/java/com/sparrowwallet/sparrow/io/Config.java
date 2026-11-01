@@ -582,6 +582,13 @@ public class Config {
     }
 
     public Server getPublicElectrumServer() {
+        if(publicElectrumServer == null && publicServerTor) {
+            PublicElectrumServer defaultServer = PublicElectrumServer.getDefaultServer();
+            if(defaultServer != null) {
+                return defaultServer.getServer();
+            }
+        }
+
         return publicElectrumServer;
     }
 
