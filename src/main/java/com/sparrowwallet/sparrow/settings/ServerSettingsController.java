@@ -463,7 +463,7 @@ public class ServerSettingsController extends SettingsDetailController {
 
         PublicElectrumServer configPublicElectrumServer = PublicElectrumServer.fromServer(config.getPublicElectrumServer());
         if(configPublicElectrumServer == null && PublicElectrumServer.supportedNetwork()) {
-            List<PublicElectrumServer> servers = PublicElectrumServer.getServers();
+            List<PublicElectrumServer> servers = PublicElectrumServer.getDefaultServers();
             if(!servers.isEmpty()) {
                 publicElectrumServer.setValue(servers.get(ThreadLocalRandom.current().nextInt(servers.size())));
             }
