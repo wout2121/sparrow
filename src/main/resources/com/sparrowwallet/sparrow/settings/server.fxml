@@ -87,8 +87,8 @@
             <Field text="URL:">
                 <ComboBox fx:id="publicElectrumServer" />
             </Field>
-            <Field text="Verbind via Tor:">
-                <UnlabeledToggleSwitch fx:id="publicUseProxy"/><HelpLabel helpText="Connects to the public server through a Tor proxy (default 127.0.0.1:9050), so the server cannot see your IP address. Tor must be running on your computer." />
+            <Field text="Gebruik externe proxy:">
+                <UnlabeledToggleSwitch fx:id="publicUseProxy"/><HelpLabel helpText="By default, public servers are reached through Sparrow's built-in Tor, so the server cannot see your IP address and you do not need to install anything. Enable this to use your own external proxy instead (for example Tor on 127.0.0.1:9050)." />
             </Field>
             <Field text="Proxy URL:">
                 <TextField fx:id="publicProxyHost" promptText="e.g. 127.0.0.1" />
