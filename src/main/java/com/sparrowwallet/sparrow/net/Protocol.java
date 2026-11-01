@@ -1,6 +1,7 @@
 package com.sparrowwallet.sparrow.net;
 
 import com.google.common.net.HostAndPort;
+import com.sparrowwallet.sparrow.io.Config;
 import com.sparrowwallet.sparrow.io.Server;
 
 import java.io.File;
@@ -41,7 +42,7 @@ public enum Protocol {
     SSL(50002) {
         @Override
         public CloseableTransport getTransport(HostAndPort server) throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
-            if(isOnionAddress(server)) {
+            if(isOnionAddress(server) || useInternalTor(server)) {
                 return new TorTcpOverTlsTransport(server);
             }
 
@@ -50,7 +51,7 @@ public enum Protocol {
 
         @Override
         public CloseableTransport getTransport(HostAndPort server, File serverCert) throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
-            if(isOnionAddress(server)) {
+            if(isOnionAddress(server) || useInternalTor(server)) {
                 return new TorTcpOverTlsTransport(server, serverCert);
             }
 
@@ -148,6 +149,10 @@ public enum Protocol {
 
     public String toUrlString(HostAndPort hostAndPort) {
         return toUrlString() + hostAndPort.toString();
+    }
+
+    public static boolean useInternalTor(HostAndPort server) {
+        return Config.get().requiresInternalTor() && PublicElectrumServer.isPublicServer(server);
     }
 
     public static boolean isOnionHost(String host) {
