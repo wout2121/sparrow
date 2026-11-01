@@ -73,6 +73,10 @@ public enum PublicElectrumServer {
         return getServers().stream().filter(server -> !server.isOnion()).collect(Collectors.toList());
     }
 
+    public static PublicElectrumServer getDefaultServer() {
+        return Network.get() == Network.MAINNET ? BITCOINSERVER_NL_ONION : null;
+    }
+
     public static boolean supportedNetwork() {
         return SUPPORTED_NETWORKS.contains(Network.get());
     }
