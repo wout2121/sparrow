@@ -29,6 +29,7 @@ public class Config {
     private static final Logger log = LoggerFactory.getLogger(Config.class);
 
     public static final String CONFIG_FILENAME = "config";
+    public static final String DEFAULT_TOR_PROXY = "127.0.0.1:9050";
 
     private Mode mode;
     private BitcoinUnit bitcoinUnit;
@@ -88,6 +89,7 @@ public class Config {
     private List<Server> recentElectrumServers;
     private File electrumServerCert;
     private boolean useProxy;
+    private boolean useProxySet;
     private String proxyServer;
     private boolean autoSwitchProxy = true;
     private int maxServerTimeout = DEFAULT_MAX_TIMEOUT;
@@ -732,15 +734,24 @@ public class Config {
     }
 
     public boolean isUseProxy() {
+        if(!useProxySet && serverType == ServerType.PUBLIC_ELECTRUM_SERVER) {
+            return true;
+        }
+
         return useProxy;
     }
 
     public void setUseProxy(boolean useProxy) {
         this.useProxy = useProxy;
+        this.useProxySet = true;
         flush();
     }
 
     public String getProxyServer() {
+        if((proxyServer == null || proxyServer.isBlank()) && serverType == ServerType.PUBLIC_ELECTRUM_SERVER) {
+            return DEFAULT_TOR_PROXY;
+        }
+
         return proxyServer;
     }
 
